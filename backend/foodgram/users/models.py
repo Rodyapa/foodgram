@@ -44,6 +44,11 @@ class CustomUser(AbstractUser):
         max_length=150,
         blank=False
     )
+    avatar = models.ImageField(
+        verbose_name='Аватар пользователя',
+        upload_to='user_avatars/',
+        blank=True
+    )
 
     @property
     def is_admin(self):
@@ -55,3 +60,23 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Subscription(models.Model):
+    """
+    Подписки пользователя.
+    """
+    user = models.ForeignKey(
+        verbose_name='Пользователь',
+        to=CustomUser,
+        on_delete=models.CASCADE,
+        blank=False,
+        related_name='subscriptions'
+    )
+    subscriptable_user = models.ForeignKey(
+        verbose_name='Подписки',
+        to=CustomUser,
+        on_delete=models.CASCADE,
+        blank=False,
+        related_name='subscribers'
+    )
