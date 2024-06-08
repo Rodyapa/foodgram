@@ -16,13 +16,15 @@ class CustomUserViewSet(djoser_views.UserViewSet):
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-
-    def get_serializer(self, *args, **kwargs):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    def get_serializer_class(self, *args, **kwargs):
         if self.action == "list":
             return CustomUserListSerializer
-        return super().get_serializer(*args, **kwargs)
-
-
+        return super().get_serializer_class(*args, **kwargs)
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = [permissions.IsAuthenticated,]
+        return super().get_permissions()
 class AvatarView(views.APIView):
     permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly]
     def put(self, request):
