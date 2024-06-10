@@ -6,12 +6,14 @@ from .views import (CustomUserViewSet,
                     AvatarView,
                     SubscriptionView,
                     TagViewSet,
-                    IngredientViewSet)
+                    IngredientViewSet,
+                    RecipeViewSet)
 
 api_v1 = DefaultRouter()
 api_v1.register(r'users', CustomUserViewSet, basename='users')
 api_v1.register(r'tags', TagViewSet, basename='tags')
 api_v1.register(r'ingredients', IngredientViewSet, basename='ingredients')
+api_v1.register(r'recipes', RecipeViewSet, basename='recipes')
 api_v1_urlpatterns = {
     path(
         route=r'users/me/avatar/',

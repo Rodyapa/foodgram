@@ -6,16 +6,33 @@ from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from users.models import Subscription
-from recipes.models import Tag, Ingredient
+from recipes.models import Tag, Ingredient, Recipe
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 import base64
 import uuid
 User = get_user_model()
 
+class CustomUserCreateSerialzier(djoser_serialisers.UserCreateSerializer):
+    username = serializers.CharField(
+        validators=[MaxLengthValidator(MAX_USERNAME_LENGTH),
+                    username_validator,
+                    UniqueValidator(queryset=User.objects.all())
+        ],
+    )
 
-class CustomUserSerializer(serializers.ModelSerializer,
-                           djoser_serialisers.UserCreateMixin):
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "username",
+            "first_name",
+            "last_name",
+            "password"
+        )
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(
         validators=[MaxLengthValidator(MAX_USERNAME_LENGTH),
@@ -34,17 +51,6 @@ class CustomUserSerializer(serializers.ModelSerializer,
             "email",
             "avatar",
         )
-
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
 
 
 class CustomUserListSerializer(CustomUserSerializer):
@@ -112,3 +118,10 @@ class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ['id', 'name', 'measurement_unit']
+
+
+class RecipeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        field = '__all__'

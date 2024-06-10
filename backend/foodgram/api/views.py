@@ -4,11 +4,12 @@ from .serializers import (CustomUserSerializer,
                           AvatarSerializer,
                           SubscriptionSerializer,
                           TagSerializer,
-                          IngredientSerializer)
+                          IngredientSerializer,
+                          RecipeSerializer)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from users.models import Subscription
-from recipes.models import Tag, Ingredient
+from recipes.models import Tag, Ingredient, Recipe
 from rest_framework import authentication, permissions
 from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
@@ -71,3 +72,12 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (drf_filters.SearchFilter,)
     search_fields = ('name',)
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    
+    permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly,]
+    serializer_class = RecipeSerializer
+    queryset = Recipe.objects.all()
+    class Meta:
+        fields = ('__all__',)

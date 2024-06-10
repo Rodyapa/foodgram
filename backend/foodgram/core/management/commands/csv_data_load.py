@@ -1,0 +1,68 @@
+import csv
+import os
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from recipes.models import Tag, Recipe, Ingredient
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+
+def user_import(row):
+    if not User.objects.filter(username=row[0]):
+        User.objects.create_user(
+            username=row[0],
+            first_name=row[1],
+            last_name=row[2],
+            email=row[3],
+            password=row[4]
+        )
+
+
+def ingredients_import(row):
+    Ingredient.objects.get_or_create(
+        name=row[0],
+        measurement_unit=row[1]
+    )
+
+
+def tags_import(row):
+    Tag.objects.get_or_create(
+        name=row[0],
+        slug=row[1]
+    )
+
+
+def recipes_import(row):
+    recipe = Recipe.objects.get_or_create(
+        name=row[0],
+        image=row[1],
+        text=row[2],
+        author_id=row[3],
+        cooking_time=row[4],
+    )[0]
+    tags = list(row[5].split(","))
+    ingredients = list(row[6].split(","))
+    for tag in tags:
+        recipe.tags.add(tag)
+    for ingredient in ingredients:
+        recipe.ingredients.add(ingredient)
+
+
+def recipes_ingredients(row):
+    pass
+action = {
+    'users.csv': user_import,
+    'ingredients.csv': ingredients_import,
+    'tags.csv': tags_import,
+    'recipes.csv': recipes_import
+}
+
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        path = os.path.join(settings.BASE_DIR, '../../data/')
+        for key in action.keys():
+            with open(path + key, 'r', encoding='utf-8') as csv_file:
+                reader = csv.reader(csv_file)
+                for row in reader:
+                    action[key](row)
