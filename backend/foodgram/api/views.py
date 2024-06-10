@@ -3,11 +3,12 @@ from .serializers import (CustomUserSerializer,
                           CustomUserListSerializer,
                           AvatarSerializer,
                           SubscriptionSerializer,
-                          TagSerializer)
+                          TagSerializer,
+                          IngredientSerializer)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from users.models import Subscription
-from recipes.models import Tag
+from recipes.models import Tag, Ingredient
 from rest_framework import authentication, permissions
 from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
@@ -61,3 +62,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer

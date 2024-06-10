@@ -1,6 +1,6 @@
 from django.db import models
 from slugify import slugify
-from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH
+from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH, MAX_NAME, MAX_UNIT_LENGTH
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -16,6 +16,18 @@ class Tag(models.Model):
     slug = models.SlugField(
         verbose_name='уникальное название тега',
         unique=True
+    )
+
+
+class Ingredient(models.Model):
+    name = models.CharField(
+        verbose_name='Название ингредиента',
+        max_length=MAX_NAME,
+        unique=True
+    )
+    measurement_unit = models.CharField(
+        verbose_name='Единица измерения',
+        max_length=MAX_UNIT_LENGTH,
     )
 
 

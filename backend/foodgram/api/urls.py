@@ -2,11 +2,16 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from .views import CustomUserViewSet, AvatarView, SubscriptionView, TagViewSet
+from .views import (CustomUserViewSet,
+                    AvatarView,
+                    SubscriptionView,
+                    TagViewSet,
+                    IngredientViewSet)
 
 api_v1 = DefaultRouter()
 api_v1.register(r'users', CustomUserViewSet, basename='users')
 api_v1.register(r'tags', TagViewSet, basename='tags')
+api_v1.register(r'ingredients', IngredientViewSet, basename='ingredients')
 api_v1_urlpatterns = {
     path(
         route=r'users/me/avatar/',

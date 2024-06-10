@@ -6,7 +6,7 @@ from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from users.models import Subscription
-from recipes.models import Tag
+from recipes.models import Tag, Ingredient
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 import base64
@@ -105,3 +105,10 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'name', 'slug']
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ingredient
+        fields = ['id', 'name', 'measurement_unit']
