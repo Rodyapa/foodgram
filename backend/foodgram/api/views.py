@@ -12,6 +12,7 @@ from recipes.models import Tag, Ingredient
 from rest_framework import authentication, permissions
 from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
+from rest_framework import filters as  drf_filters
 from rest_framework.response import Response
 User = get_user_model()
 
@@ -68,3 +69,5 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (drf_filters.SearchFilter,)
+    search_fields = ('name',)
