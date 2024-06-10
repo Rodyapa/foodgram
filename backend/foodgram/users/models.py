@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import EmailValidator
-from foodgram.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
+from foodgram.constants import (MAX_EMAIL_LENGTH,
+                                MAX_USERNAME_LENGTH,)
 
 
 class CustomUser(AbstractUser):
@@ -73,10 +74,12 @@ class Subscription(models.Model):
         blank=False,
         related_name='subscriptions'
     )
-    subscriptable_user = models.ForeignKey(
+    target_user = models.ForeignKey(
         verbose_name='Подписки',
         to=CustomUser,
         on_delete=models.CASCADE,
         blank=False,
         related_name='subscribers'
     )
+
+

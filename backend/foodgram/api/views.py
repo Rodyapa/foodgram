@@ -1,10 +1,13 @@
 from djoser import views as djoser_views
 from .serializers import (CustomUserSerializer,
                           CustomUserListSerializer,
-                          AvatarSerializer)
+                          AvatarSerializer,
+                          SubscriptionSerializer,
+                          TagSerializer)
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from users.models import Subscription
+from recipes.models import Tag
 from rest_framework import authentication, permissions
 from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
@@ -25,6 +28,8 @@ class CustomUserViewSet(djoser_views.UserViewSet):
         if self.action == 'me':
             self.permission_classes = [permissions.IsAuthenticated,]
         return super().get_permissions()
+
+
 class AvatarView(views.APIView):
     permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly]
     def put(self, request):
@@ -37,3 +42,22 @@ class AvatarView(views.APIView):
     def delete(self, request):
         request.user.avatar.delete()
         return Response({'message': 'Avatar deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class SubscriptionView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated,]
+    def get(self, request):
+        pass
+    def post(self, request):
+        user = self.request.user
+        target_user = get_object_or_404(user_id=self.kwargs['target_id'])
+        data = {"user": user, "target_user": target_user}
+        serializer = SubscriptionSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            Subscription.objects.create(serializer.data)
+        
+
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer

@@ -6,6 +6,7 @@ from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from users.models import Subscription
+from recipes.models import Tag
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 import base64
@@ -87,3 +88,20 @@ class Base64ImageField(serializers.ImageField):
 
 class AvatarSerializer(serializers.Serializer):
     avatar = Base64ImageField()
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = (
+            "user",
+            "target_user"
+        )
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'slug']
