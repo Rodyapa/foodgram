@@ -138,6 +138,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientPerRecipeSerializer(source='ingredient_recipes',
                                                 many=True,
                                                 read_only=True)
+    image = Base64ImageField()
 
     class Meta:
         model = Recipe
@@ -150,3 +151,64 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'text',
                   'cooking_time'
                   ]
+
+
+class IngredientPerRecipeCreateUpdateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id')
+
+    class Meta:
+        model = IngredientPerRecipe
+        fields = ['id', 'amount',]
+
+
+class RecipeCreateUpdateSerialzier(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(many=True,
+                                              queryset=Tag.objects.all())
+    ingredients = IngredientPerRecipeCreateUpdateSerializer(
+        source='ingredient_recipes',
+        many=True,
+        )
+
+    image = Base64ImageField()
+    class Meta:
+        model = Recipe
+        fields = ['id',
+                  'tags',
+                  'author',
+                  'ingredients',
+                  'name',
+                  'image',
+                  'text',
+                  'cooking_time'
+                  ]
+
+
+    def create(self, validated_data):
+        tags_data = validated_data.pop('tags')
+        ingredients_data = validated_data.pop('ingredient_recipes')
+        recipe = Recipe.objects.create(**validated_data)
+        for tag in tags_data:
+            recipe.tags.add(tag)
+        for ingredient in ingredients_data:
+            ingredient, amount = ingredient.values()
+            recipe.ingredients.add(ingredient['id'], through_defaults={'amount':amount})
+        return recipe
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr == 'tags':
+                instance.tags.clear()
+                for tag in value:
+                    instance.tags.add(tag)
+            elif attr == 'ingredient_recipes':
+                instance.ingredients.clear()
+                for ingredient in value:
+                    ingredient, amount = ingredient.values()
+                    instance.ingredients.add(
+                        ingredient['id'],
+                        through_defaults={'amount': amount}
+                    )
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance

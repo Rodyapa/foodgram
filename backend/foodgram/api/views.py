@@ -5,18 +5,22 @@ from .serializers import (CustomUserSerializer,
                           SubscriptionSerializer,
                           TagSerializer,
                           IngredientSerializer,
-                          RecipeSerializer)
+                          RecipeSerializer,
+                          RecipeCreateUpdateSerialzier
+                          )
 from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from users.models import Subscription
 from recipes.models import Tag, Ingredient, Recipe
 from rest_framework import authentication, permissions
+from . import permissions as custom_permissions
 from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
 from rest_framework import filters as  drf_filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.permissions import SAFE_METHODS
 User = get_user_model()
 
 
@@ -76,11 +80,20 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ('name',)
 
 
-class RecipeViewSet(viewsets.GenericViewSet,
-                    mixins.RetrieveModelMixin,
-                    mixins.ListModelMixin):
+class RecipeViewSet(viewsets.ModelViewSet):
     
+    permission_classes = [custom_permissions.IsAuthorOrIsStaffOrReadOnly,]
     serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def create(self, request, *args, **kwargs):
+        request.data['author'] = self.request.user.id
+        return super().create(request, *args, **kwargs)
+    
+
+    def get_serializer_class(self):
+        if self.request.method in ['POST', 'PATCH']:
+            return RecipeCreateUpdateSerialzier
+        return RecipeSerializer

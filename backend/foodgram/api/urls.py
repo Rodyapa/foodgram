@@ -7,7 +7,8 @@ from .views import (CustomUserViewSet,
                     SubscriptionView,
                     TagViewSet,
                     IngredientViewSet,
-                    RecipeViewSet)
+                    RecipeViewSet,
+                    )
 
 api_v1 = DefaultRouter()
 api_v1.register(r'users', CustomUserViewSet, basename='users')
@@ -22,7 +23,7 @@ api_v1_urlpatterns = {
     path(
         route='users/<int:target_id>/subscribe',
         view=SubscriptionView.as_view(),
-        name='subscription-view')
+        name='subscription-view'),
 }
 urlpatterns = [
     path('', include(api_v1.urls)),
