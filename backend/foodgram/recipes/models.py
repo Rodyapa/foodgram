@@ -2,6 +2,7 @@ from django.db import models
 from slugify import slugify
 from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH, MAX_NAME, MAX_UNIT_LENGTH
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator
 User = get_user_model()
 
 
@@ -59,10 +60,37 @@ class Recipe(models.Model):
         blank=True
     )
     ingredients = models.ManyToManyField(
-        to=Ingredient,
         verbose_name='Соотвествующие ингредиенты',
-        blank=False
+        blank=False,
+        through="IngredientPerRecipe",
+        through_fields=['recipe', 'ingredient'],
+        to=Ingredient
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
     )
+
+
+class IngredientPerRecipe(models.Model):
+    ingredient = models.ForeignKey(
+        to=Ingredient,
+        verbose_name='Название ингредиента',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE
+    )
+    amount = models.PositiveSmallIntegerField(
+        validators=(MaxValueValidator(10000),),
+        verbose_name='Количество',
+        default=1,
+        blank=False
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['ingredient', 'recipe'], name='ingredient_recipe_unique')
+        ]
+        default_related_name = 'ingredient_recipes'

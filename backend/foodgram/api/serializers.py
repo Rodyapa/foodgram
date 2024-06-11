@@ -6,7 +6,7 @@ from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 from users.models import Subscription
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, IngredientPerRecipe
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 import base64
@@ -120,8 +120,33 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'measurement_unit']
 
 
+class IngredientPerRecipeSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit'
+    )
+
+    class Meta:
+        model = IngredientPerRecipe
+        fields = ['id', 'name', 'measurement_unit', 'amount',]
+
+
+
 class RecipeSerializer(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, read_only=True)
+    ingredients = IngredientPerRecipeSerializer(source='ingredient_recipes',
+                                                many=True,
+                                                read_only=True)
 
     class Meta:
         model = Recipe
-        field = '__all__'
+        fields = ['id',
+                  'tags',
+                  'author',
+                  'ingredients',
+                  'name',
+                  'image',
+                  'text',
+                  'cooking_time'
+                  ]

@@ -6,6 +6,7 @@ from .serializers import (CustomUserSerializer,
                           TagSerializer,
                           IngredientSerializer,
                           RecipeSerializer)
+from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from users.models import Subscription
@@ -15,6 +16,7 @@ from djoser import permissions as djoser_permissions
 from rest_framework import viewsets, generics, mixins, status, views
 from rest_framework import filters as  drf_filters
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 User = get_user_model()
 
 
@@ -74,10 +76,11 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ('name',)
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(viewsets.GenericViewSet,
+                    mixins.RetrieveModelMixin,
+                    mixins.ListModelMixin):
     
-    permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly,]
     serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
-    class Meta:
-        fields = ('__all__',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
