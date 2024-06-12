@@ -21,6 +21,7 @@ class CustomUser(AbstractUser):
         validators=[UnicodeUsernameValidator(),
                     ],
         unique=True,
+        blank=False
     )
     email = models.EmailField(
         verbose_name='Email пользователя',
@@ -51,6 +52,8 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
+    REQUIRED_FIELDS = ["username", "last_name", "first_name"]
+    USERNAME_FIELD = "email"
     @property
     def is_admin(self):
         return self.role == self.Roles.ADMIN

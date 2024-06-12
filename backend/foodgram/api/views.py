@@ -7,14 +7,14 @@ from .serializers import (CustomUserSerializer,
                           RecipeSerializer,
                           RecipeCreateUpdateSerialzier,
                           UserRecipesSerializer,
-                          RecipeInlineSerializer
+                          RecipeShortSerializer
                           )
 from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from users.models import Subscription
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe
 from rest_framework import authentication, permissions
 from . import permissions as custom_permissions
 from djoser import permissions as djoser_permissions
@@ -47,7 +47,7 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             serializer.save()
             target_user = User.objects.get(id=id)
             return_user = CustomUserSerializer(target_user)
-            return Response(data=return_user.data, status=status.HTTP_200_OK)
+            return Response(data=return_user.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -56,7 +56,7 @@ class CustomUserViewSet(djoser_views.UserViewSet):
     def recepies(self, request, id):
         user = self.get_object()
         related_recipes = Recipe.objects.filter(author=user)
-        serializer = RecipeInlineSerializer(related_recipes, many=True)
+        serializer = RecipeShortSerializer(related_recipes, many=True)
         if serializer.is_valid:
             return Response(serializer.data)
         return Response(serializer.errors)
@@ -116,3 +116,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method in ['POST', 'PATCH']:
             return RecipeCreateUpdateSerialzier
         return RecipeSerializer
+
+    @action(detail=True, methods=['get'],
+            serializer_class=UserRecipesSerializer,
+            permission_classes=[permissions.IsAuthenticated])
+    def favorite(self, request, id):
+        recipe = get_object_or_404(Recipe, id=id)
+        favorite_recipe, created = FavoriteRecipe.objects.get_or_create(
+            user=request.user,
+            recipe=recipe
+        )
+        if not created:
+            return Response(
+                'Вы уже добавили этот рецепт в избранное',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        favorite_recipe_serialized = RecipeShortSerializer(
+            data=favorite_recipe
+        )
+        return Response(favorite_recipe_serialized,
+                        status=status.HTTP_201_CREATED)

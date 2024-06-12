@@ -101,3 +101,22 @@ class IngredientPerRecipe(models.Model):
             models.UniqueConstraint(fields=['ingredient', 'recipe'], name='ingredient_recipe_unique')
         ]
         default_related_name = 'ingredient_recipes'
+
+
+class FavoriteRecipe(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name='Избранный рецепт',
+        on_delete=models.CASCADE
+    )
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='user_recipe_unique')
+        ]

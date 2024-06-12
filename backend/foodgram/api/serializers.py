@@ -14,7 +14,8 @@ import uuid
 User = get_user_model()
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer,
+                           djoser_serialisers.UserCreateMixin):
 
     username = serializers.CharField(
         validators=[MaxLengthValidator(MAX_USERNAME_LENGTH),
@@ -42,7 +43,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "password",
             "is_subscribed"
         )
-    
+        read_only_fields = ["id", ]
+
+
     def get_is_subscribed(self, obj):
         request_user = self.context['request'].user
         if request_user == obj:
@@ -219,7 +222,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
         ]
 
-class RecipeInlineSerializer(serializers.ModelSerializer):
+class RecipeShortSerializer(serializers.ModelSerializer):
     image = Base64ImageField(read_only=True)
 
     class Meta:
@@ -237,7 +240,7 @@ class RecipeInlineSerializer(serializers.ModelSerializer):
 
 
 class UserRecipesSerializer(serializers.ModelSerializer):
-    recipes = RecipeInlineSerializer( many=True, read_only=True)
+    recipes = RecipeShortSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -250,3 +253,4 @@ class UserRecipesSerializer(serializers.ModelSerializer):
             "avatar",
             "recipes"
         )
+
