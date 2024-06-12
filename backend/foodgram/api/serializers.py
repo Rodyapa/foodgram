@@ -47,6 +47,8 @@ class CustomUserSerializer(serializers.ModelSerializer,
 
 
     def get_is_subscribed(self, obj):
+        if not self.context['request'].user.is_authenticated:
+            return False
         request_user = self.context['request'].user
         if request_user == obj:
             return False
@@ -87,6 +89,12 @@ class Base64ImageField(serializers.ImageField):
 class AvatarSerializer(serializers.Serializer):
     avatar = Base64ImageField()
 
+
+class AvatarResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['avatar']
 
 class TagSerializer(serializers.ModelSerializer):
 

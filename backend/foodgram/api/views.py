@@ -7,7 +7,8 @@ from .serializers import (CustomUserSerializer,
                           RecipeSerializer,
                           RecipeCreateUpdateSerialzier,
                           UserRecipesSerializer,
-                          RecipeShortSerializer
+                          RecipeShortSerializer,
+                          AvatarResponseSerializer
                           )
 from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
@@ -78,7 +79,8 @@ class AvatarView(views.APIView):
         if serializer.is_valid():
             request.user.avatar = serializer.validated_data['avatar']
             request.user.save()
-            return Response({'message': 'Avatar updated successfully'}, status=status.HTTP_200_OK)
+            response = AvatarResponseSerializer(request.user)
+            return Response(response.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def delete(self, request):
         request.user.avatar.delete()
