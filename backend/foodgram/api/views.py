@@ -1,16 +1,18 @@
 from djoser import views as djoser_views
 from .serializers import (CustomUserSerializer,
-                          CustomUserListSerializer,
                           AvatarSerializer,
                           SubscriptionSerializer,
                           TagSerializer,
                           IngredientSerializer,
                           RecipeSerializer,
-                          RecipeCreateUpdateSerialzier
+                          RecipeCreateUpdateSerialzier,
+                          UserRecipesSerializer,
+                          RecipeInlineSerializer
                           )
 from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
 from users.models import Subscription
 from recipes.models import Tag, Ingredient, Recipe
 from rest_framework import authentication, permissions
@@ -29,15 +31,45 @@ class CustomUserViewSet(djoser_views.UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    def get_serializer_class(self, *args, **kwargs):
-        if self.action == "list":
-            return CustomUserListSerializer
-        return super().get_serializer_class(*args, **kwargs)
+
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = [permissions.IsAuthenticated,]
         return super().get_permissions()
 
+    @action(detail=True, methods=['post',],
+            permission_classes=[permissions.IsAuthenticated,],)
+    def subscribe(self, request, id=None):
+        request.data['user'] = request.user.id
+        request.data['target_user'] = self.kwargs['id']
+        serializer = SubscriptionSerializer(data=request.data,)
+        if serializer.is_valid():
+            serializer.save()
+            target_user = User.objects.get(id=id)
+            return_user = CustomUserSerializer(target_user)
+            return Response(data=return_user.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=True, methods=['get',],
+            serializer_class=UserRecipesSerializer) # THIS method doesn't required by docs. CAn b Deleted
+    def recepies(self, request, id):
+        user = self.get_object()
+        related_recipes = Recipe.objects.filter(author=user)
+        serializer = RecipeInlineSerializer(related_recipes, many=True)
+        if serializer.is_valid:
+            return Response(serializer.data)
+        return Response(serializer.errors)
+
+    @action(detail=True, methods=['get'],
+            serializer_class=UserRecipesSerializer)
+    def subscriptions(self, request, id):
+        user = self.request.user
+        subscribed_users = User.objects.filter(subscribers__user=user)
+        serializer = UserRecipesSerializer(subscribed_users, many=True)
+        if serializer.is_valid:
+            return Response(serializer.data)
+        return Response(serializer.errors)
 
 class AvatarView(views.APIView):
     permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly]
@@ -51,20 +83,7 @@ class AvatarView(views.APIView):
     def delete(self, request):
         request.user.avatar.delete()
         return Response({'message': 'Avatar deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-    
 
-class SubscriptionView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated,]
-    def get(self, request):
-        pass
-    def post(self, request):
-        user = self.request.user
-        target_user = get_object_or_404(user_id=self.kwargs['target_id'])
-        data = {"user": user, "target_user": target_user}
-        serializer = SubscriptionSerializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            Subscription.objects.create(serializer.data)
-        
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
 

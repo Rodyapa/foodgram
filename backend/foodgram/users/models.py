@@ -82,4 +82,9 @@ class Subscription(models.Model):
         related_name='subscribers'
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'target_user'],
+                                    name='user_target_user_unique',)
+        ]
 

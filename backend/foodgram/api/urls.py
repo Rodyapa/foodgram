@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (CustomUserViewSet,
                     AvatarView,
-                    SubscriptionView,
                     TagViewSet,
                     IngredientViewSet,
                     RecipeViewSet,
@@ -20,10 +19,6 @@ api_v1_urlpatterns = {
         route=r'users/me/avatar/',
         view=AvatarView.as_view(),
         name='avatar-view'),
-    path(
-        route='users/<int:target_id>/subscribe',
-        view=SubscriptionView.as_view(),
-        name='subscription-view'),
 }
 urlpatterns = [
     path('', include(api_v1.urls)),

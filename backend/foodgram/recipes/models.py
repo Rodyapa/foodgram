@@ -39,6 +39,7 @@ class Recipe(models.Model):
         to=User,
         on_delete=models.CASCADE,
         blank=False,
+        related_name='recipes'
     )
     name = models.CharField(
         verbose_name='Название рецепта',
@@ -70,6 +71,12 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['author', 'name'],
+                                    name='author_name_unique',
+                                    )
+        ]
 
 class IngredientPerRecipe(models.Model):
     ingredient = models.ForeignKey(

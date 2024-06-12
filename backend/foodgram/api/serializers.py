@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from djoser import serializers as djoser_serialisers
 from foodgram.constants import MAX_USERNAME_LENGTH
-from users.validators import username_validator
+from users.validators import username_validator, CantSubscribeMyselfValdiator
 from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
@@ -13,24 +13,6 @@ import base64
 import uuid
 User = get_user_model()
 
-class CustomUserCreateSerialzier(djoser_serialisers.UserCreateSerializer):
-    username = serializers.CharField(
-        validators=[MaxLengthValidator(MAX_USERNAME_LENGTH),
-                    username_validator,
-                    UniqueValidator(queryset=User.objects.all())
-        ],
-    )
-
-    class Meta:
-        model = User
-        fields = (
-            "email",
-            "username",
-            "first_name",
-            "last_name",
-            "password"
-        )
-
 
 class CustomUserSerializer(serializers.ModelSerializer):
 
@@ -40,6 +22,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
                     UniqueValidator(queryset=User.objects.all())
         ],
     )
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        write_only=True
+    )
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='get_is_subscribed',
+        )
 
     class Meta:
         model = User
@@ -50,20 +39,20 @@ class CustomUserSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "avatar",
+            "password",
+            "is_subscribed"
         )
-
-
-class CustomUserListSerializer(CustomUserSerializer):
     
-    class Meta:
-        model = User
-        fields = (
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "email",
-        )
+    def get_is_subscribed(self, obj):
+        request_user = self.context['request'].user
+        if request_user == obj:
+            return False
+        else:
+            subscribed = Subscription.objects.filter(user=request_user,
+                                                     target_user=obj)
+            if subscribed:
+                return True
+        return False
 
 
 class Base64ImageField(serializers.ImageField):
@@ -94,16 +83,6 @@ class Base64ImageField(serializers.ImageField):
 
 class AvatarSerializer(serializers.Serializer):
     avatar = Base64ImageField()
-
-
-class SubscriptionSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Subscription
-        fields = (
-            "user",
-            "target_user"
-        )
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -181,6 +160,12 @@ class RecipeCreateUpdateSerialzier(serializers.ModelSerializer):
                   'text',
                   'cooking_time'
                   ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Recipe.objects.all(),
+                fields=['author', 'name'],
+                message='Пользователь не может иметь рецепты с одинаковыми названиями'
+            ),]
 
 
     def create(self, validated_data):
@@ -212,3 +197,56 @@ class RecipeCreateUpdateSerialzier(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = (
+            "user",
+            "target_user"
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=['user', 'target_user'],
+                message='Вы уже подписаны на этого пользователя'
+            ),
+            CantSubscribeMyselfValdiator()
+
+        ]
+
+class RecipeInlineSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = ['id',
+                  'name',
+                  'image',
+                  'cooking_time'
+                  ]
+        read_only_fields = ['id',
+                            'name',
+                            'image',
+                            'cooking_time'
+                            ]
+
+
+class UserRecipesSerializer(serializers.ModelSerializer):
+    recipes = RecipeInlineSerializer( many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "avatar",
+            "recipes"
+        )
