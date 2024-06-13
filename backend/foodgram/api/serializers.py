@@ -129,7 +129,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientPerRecipeSerializer(source='ingredient_recipes',
                                                 many=True,
-                                                read_only=True)
+                                                read_only=True,)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -151,7 +151,38 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         tags = self.initial_data.get("tags")
+        tag_ids_list = []
+        if not tags:
+            raise serializers.ValidationError(
+                {'tags': 'Должен быть хотя бы один тег'}
+            )
+        for tag_id in tags:
+            tag = Tag.objects.filter(id=tag_id)
+            if not tag.exists():
+                raise serializers.ValidationError({
+                    'tags': 'Указан не существующий тег'})
+            if tag_id in tag_ids_list:
+                raise serializers.ValidationError('Теги не должны повторяться')
+            tag_ids_list.append(tag_id)
         ingredients = self.initial_data.get("ingredients")
+        if not ingredients:
+            raise serializers.ValidationError({
+                'ingredients': 'Нужно добавить хотя бы один ингридиент для рецепта'})
+        ingredient_ids_list = []
+        for ingredient_item in ingredients:
+            ingredient = Ingredient.objects.filter(id=ingredient_item['id'])
+            if not ingredient.exists():
+                raise serializers.ValidationError({
+                'ingredients': 'Указан не существующий ингридиент'})
+            if ingredient_item['id'] in ingredient_ids_list:
+                raise serializers.ValidationError('Ингридиенты должны '
+                                                  'быть уникальными')
+            ingredient_ids_list.append(ingredient_item['id'])
+            if int(ingredient_item['amount']) <= 0:
+                raise serializers.ValidationError({
+                    'ingredients': ('Убедитесь, что значение количества '
+                                    'ингредиента в рецепте больше 0')
+                })
         author = self.context["request"].user
         data.update(
             {

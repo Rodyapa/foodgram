@@ -3,7 +3,7 @@ from django.db import models
 from slugify import slugify
 from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH, MAX_NAME, MAX_UNIT_LENGTH
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 import shortuuid
 User = get_user_model()
 
@@ -71,6 +71,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
+        validators=[MinValueValidator(1),]
     )
 
     short_link = models.CharField(max_length=128, unique=True,
@@ -84,11 +85,11 @@ class Recipe(models.Model):
         super(Recipe, self).save(*args, **kwargs)
 
     class Meta:
-        constraints = [
+        '''constraints = [
             models.UniqueConstraint(fields=['author', 'name'],
                                     name='author_name_unique',
                                     )
-        ]
+        ]'''
 
 
 class IngredientPerRecipe(models.Model):
