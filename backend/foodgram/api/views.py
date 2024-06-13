@@ -5,10 +5,9 @@ from .serializers import (CustomUserSerializer,
                           TagSerializer,
                           IngredientSerializer,
                           RecipeSerializer,
-                          RecipeCreateUpdateSerialzier,
                           UserRecipesSerializer,
                           RecipeShortSerializer,
-                          AvatarResponseSerializer
+                          AvatarResponseSerializer,
                           )
 from .filters import RecipeFilter
 from django.contrib.auth import get_user_model
@@ -24,6 +23,7 @@ from rest_framework import filters as  drf_filters
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import SAFE_METHODS
+from django.http import JsonResponse
 User = get_user_model()
 
 
@@ -107,23 +107,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     
     permission_classes = [custom_permissions.IsAuthorOrIsStaffOrReadOnly,]
     serializer_class = RecipeSerializer
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.select_related("author")
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def create(self, request, *args, **kwargs):
-        request.data['author'] = self.request.user.id
-        return super().create(request, *args, **kwargs)
-    
-
-    def get_serializer_class(self):
-        if self.request.method in ['POST', 'PATCH']:
-            return RecipeCreateUpdateSerialzier
-        return RecipeSerializer
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(detail=True, methods=['get'],
             serializer_class=UserRecipesSerializer,
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=[permissions.IsAuthenticated])    
     def favorite(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
         favorite_recipe, created = FavoriteRecipe.objects.get_or_create(
@@ -140,3 +133,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
         return Response(favorite_recipe_serialized,
                         status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'],
+            url_path='get-link'
+            )
+    def get_link(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        short_link = f"https://foodgram.example.org/s/{recipe.short_link}"
+        return JsonResponse({"short-link": short_link})

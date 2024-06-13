@@ -1,8 +1,10 @@
+from typing import Iterable
 from django.db import models
 from slugify import slugify
 from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH, MAX_NAME, MAX_UNIT_LENGTH
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator
+import shortuuid
 User = get_user_model()
 
 
@@ -71,12 +73,23 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
     )
 
+    short_link = models.CharField(max_length=128, unique=True,
+                                  default=shortuuid.ShortUUID().random())
+
+    def save(self, *args, **kwargs):
+        created = self.pk
+        if created is None:
+            random_string = shortuuid.ShortUUID().random()
+            self.short_link = random_string
+        super(Recipe, self).save(*args, **kwargs)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['author', 'name'],
                                     name='author_name_unique',
                                     )
         ]
+
 
 class IngredientPerRecipe(models.Model):
     ingredient = models.ForeignKey(
@@ -107,16 +120,46 @@ class FavoriteRecipe(models.Model):
     user = models.ForeignKey(
         to=User,
         verbose_name='Пользователь',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='favorites'
     )
     recipe = models.ForeignKey(
         to=Recipe,
         verbose_name='Избранный рецепт',
         on_delete=models.CASCADE
     )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
                 name='user_recipe_unique')
         ]
+
+
+class ShopingCart(models.Model):
+    user = models.ForeignKey(
+        to=User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+        related_name='shopping_cart'
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name='Рецепты списка покупок',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = "Рецепт в списке покупок"
+        verbose_name_plural = "Рецепты в списке покупок"
+        constraints = (
+            models.UniqueConstraint(
+                fields=(
+                    "user",
+                    "recipe",
+                ),
+                name="recipe_in_cart_already",
+            ),
+        )
+
