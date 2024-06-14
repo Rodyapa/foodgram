@@ -85,7 +85,7 @@ jobs:
         with:
           context: ./frontend/
           push: true
-          tags: rodypa/frontend_frontend:latest
+          tags: rodypa/foodgram_frontend:latest
 
   build_gateway_and_push_to_docker_hub:
     if: github.ref == 'refs/heads/main'
