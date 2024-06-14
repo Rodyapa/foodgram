@@ -130,25 +130,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['get'],
+    @action(detail=True, methods=['post', 'delete'],
             serializer_class=UserRecipesSerializer,
             permission_classes=[permissions.IsAuthenticated])    
-    def favorite(self, request, id):
-        recipe = get_object_or_404(Recipe, id=id)
-        favorite_recipe, created = FavoriteRecipe.objects.get_or_create(
-            user=request.user,
-            recipe=recipe
-        )
-        if not created:
-            return Response(
-                'Вы уже добавили этот рецепт в избранное',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        favorite_recipe_serialized = RecipeShortSerializer(
-            data=favorite_recipe
-        )
-        return Response(favorite_recipe_serialized,
-                        status=status.HTTP_201_CREATED)
+    def favorite(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        if request.method == 'POST':
+            if FavoriteRecipe.objects.filter(
+                    user=request.user,
+                    recipe__id=pk).exists():
+                return Response({
+                    'errors': 'Рецепт уже добавлен в избранное'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            FavoriteRecipe.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipeShortSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            obj = FavoriteRecipe.objects.filter(
+                user=request.user,
+                recipe__id=pk)
+            if obj.exists():
+                obj.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({
+                'errors': 'Рецепт уже удален'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        return None
+
+
+
+
+
+
+
 
     @action(detail=True, methods=['get'],
             url_path='get-link'
