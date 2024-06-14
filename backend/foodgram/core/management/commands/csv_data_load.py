@@ -64,7 +64,7 @@ action = {
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        path = os.path.join(settings.BASE_DIR, '../../data/')
+        path = os.path.join(settings.BASE_DIR, '../data/')
         for key in action.keys():
             with open(path + key, 'r', encoding='utf-8') as csv_file:
                 reader = csv.reader(csv_file)
