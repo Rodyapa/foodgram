@@ -42,12 +42,20 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             permission_classes=[permissions.IsAuthenticated,],)
     def subscribe(self, request, id=None):
         request.data['user'] = request.user.id
+        if not User.objects.filter(id=self.kwargs['id']).exists():
+            return Response(data={
+                'user': 'Вы пытаетесь подписатсья на несуществующего юзера',
+                },
+                status=status.HTTP_404_NOT_FOUND)
         request.data['target_user'] = self.kwargs['id']
-        serializer = SubscriptionSerializer(data=request.data,)
+        serializer = SubscriptionSerializer(data=request.data,
+                                            context={"request": request}
+                                            )
         if serializer.is_valid():
             serializer.save()
             target_user = User.objects.get(id=id)
-            return_user = CustomUserSerializer(target_user)
+            return_user = UserRecipesSerializer(target_user,
+                                                context={"request": request})
             return Response(data=return_user.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -62,12 +70,14 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
 
-    @action(detail=True, methods=['get'],
-            serializer_class=UserRecipesSerializer)
-    def subscriptions(self, request, id):
+    @action(methods=['get'], detail=False,
+            permission_classes=[permissions.IsAuthenticated,])
+    def subscriptions(self, request):
         user = self.request.user
         subscribed_users = User.objects.filter(subscribers__user=user)
-        serializer = UserRecipesSerializer(subscribed_users, many=True)
+        serializer = UserRecipesSerializer(subscribed_users,
+                                           context={"request": request},
+                                           many=True)
         if serializer.is_valid:
             return Response(serializer.data)
         return Response(serializer.errors)

@@ -17,6 +17,5 @@ class CantSubscribeMyselfValdiator:
     def __call__(self, attrs, serializer):
         current_user = serializer.initial_data['user']
         target_user = serializer.initial_data['target_user']
-        if current_user == target_user:
-            raise ValidationError('Sorry you cannot leave '
-                                  'more than one review for single a title')
+        if int(current_user) == int(target_user):
+            raise ValidationError('Вы не можете подписаться на самого себя')

@@ -263,7 +263,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         ]
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-    image = Base64ImageField(read_only=True)
+    image = serializers.ImageField(read_only=True)
 
     class Meta:
         model = Recipe
@@ -280,8 +280,12 @@ class RecipeShortSerializer(serializers.ModelSerializer):
 
 
 class UserRecipesSerializer(serializers.ModelSerializer):
-    recipes = RecipeShortSerializer(many=True, read_only=True)
-
+    recipes = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='get_is_subscribed',
+        )
+    recipes_count = serializers.SerializerMethodField()
+    avatar = serializers.ImageField()
     class Meta:
         model = User
         fields = (
@@ -290,6 +294,33 @@ class UserRecipesSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "is_subscribed",
             "avatar",
+            "recipes_count",
             "recipes"
         )
+
+    def get_is_subscribed(self, obj):
+        if not self.context['request'].user.is_authenticated:
+            return False
+        request_user = self.context['request'].user
+        if request_user == obj:
+            return False
+        else:
+            subscribed = Subscription.objects.filter(user=request_user,
+                                                     target_user=obj)
+            if subscribed:
+                return True
+        return False
+    
+    def get_recipes_count(self, obj):
+        recipes_count = obj.recipes.count()
+        return recipes_count
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.id)
+        if limit:
+            queryset = queryset[:int(limit)]
+        return RecipeShortSerializer(queryset, many=True).data
