@@ -1,4 +1,4 @@
-name: Main Kittygram Workflow
+name: Main Foodgram  Workflow
 
 on:
   push:
@@ -135,6 +135,6 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd foodgram
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.yml pull
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.yml down
-          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.yml up -d
+          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml pull
+          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml down
+          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml up -d
