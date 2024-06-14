@@ -122,8 +122,8 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.HOST_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: 22
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY }}
         source: "docker-compose.yml"
         target: "foodgram"
     - name: Executing remote ssh commands to deploy
@@ -131,8 +131,8 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.HOST_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: 22
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        key: ${{ secrets.SSH_KEY }}
         script: |
           cd foodgram
           echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.yml pull
