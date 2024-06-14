@@ -130,9 +130,9 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
+        username: ${{ secrets.HOST_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
+        port: 22
         script: |
           cd foodgram
           sudo docker compose -f docker-compose.production.yml pull
