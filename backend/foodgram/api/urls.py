@@ -1,13 +1,8 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (CustomUserViewSet,
-                    AvatarView,
-                    TagViewSet,
-                    IngredientViewSet,
-                    RecipeViewSet,
-                    )
+from .views import (AvatarView, CustomUserViewSet, IngredientViewSet,
+                    RecipeViewSet, TagViewSet)
 
 api_v1 = DefaultRouter()
 api_v1.register(r'users', CustomUserViewSet, basename='users')

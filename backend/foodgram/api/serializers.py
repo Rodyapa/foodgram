@@ -1,16 +1,18 @@
-from rest_framework import serializers
-from djoser import serializers as djoser_serialisers
-from foodgram.constants import MAX_USERNAME_LENGTH
-from users.validators import username_validator, CantSubscribeMyselfValdiator
-from django.core.validators import MaxLengthValidator
-from django.contrib.auth import get_user_model
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
-from users.models import Subscription
-from recipes.models import Tag, Ingredient, Recipe, IngredientPerRecipe
-from django.shortcuts import get_object_or_404
-from django.core.files.base import ContentFile
 import base64
 import uuid
+
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.core.validators import MaxLengthValidator
+from djoser import serializers as djoser_serialisers
+from recipes.models import Ingredient, IngredientPerRecipe, Recipe, Tag
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from users.models import Subscription
+from users.validators import CantSubscribeMyselfValdiator, username_validator
+
+from foodgram.constants import MAX_USERNAME_LENGTH
+
 User = get_user_model()
 
 
@@ -21,7 +23,7 @@ class CustomUserSerializer(serializers.ModelSerializer,
         validators=[MaxLengthValidator(MAX_USERNAME_LENGTH),
                     username_validator,
                     UniqueValidator(queryset=User.objects.all())
-        ],
+                    ],
     )
     password = serializers.CharField(
         style={'input_type': 'password'},
@@ -29,7 +31,7 @@ class CustomUserSerializer(serializers.ModelSerializer,
     )
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed',
-        )
+    )
 
     class Meta:
         model = User
@@ -42,10 +44,8 @@ class CustomUserSerializer(serializers.ModelSerializer,
             "is_subscribed",
             "avatar",
             "password",
-            
         )
         read_only_fields = ["id", ]
-
 
     def get_is_subscribed(self, obj):
         if not self.context['request'].user.is_authenticated:
@@ -97,8 +97,9 @@ class AvatarResponseSerializer(serializers.ModelSerializer):
         model = User
         fields = ['avatar']
 
+
 class TagSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Tag
         fields = ['id', 'name', 'slug']
@@ -121,8 +122,7 @@ class IngredientPerRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientPerRecipe
-        fields = ['id', 'name', 'measurement_unit', 'amount',]
-
+        fields = ['id', 'name', 'measurement_unit', 'amount', ]
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -167,13 +167,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = self.initial_data.get("ingredients")
         if not ingredients:
             raise serializers.ValidationError({
-                'ingredients': 'Нужно добавить хотя бы один ингридиент для рецепта'})
+                'ingredients':
+                'Нужно добавить хотя бы один ингридиент для рецепта'})
         ingredient_ids_list = []
         for ingredient_item in ingredients:
             ingredient = Ingredient.objects.filter(id=ingredient_item['id'])
             if not ingredient.exists():
                 raise serializers.ValidationError({
-                'ingredients': 'Указан не существующий ингридиент'})
+                    'ingredients':
+                    'Указан не существующий ингридиент'})
             if ingredient_item['id'] in ingredient_ids_list:
                 raise serializers.ValidationError('Ингридиенты должны '
                                                   'быть уникальными')
@@ -208,8 +210,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         is_in_shopping_cart = user.shopping_cart.filter(recipe=recipe).exists()
         return is_in_shopping_cart
 
-
-
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
@@ -233,10 +233,14 @@ class RecipeSerializer(serializers.ModelSerializer):
                 objs = []
                 for ingredient_data in value:
                     ingredient_id, amount = ingredient_data.values()
-                    ingredient_instance = Ingredient.objects.get(id=ingredient_id)
+                    ingredient_instance = Ingredient.objects.get(
+                        id=ingredient_id
+                    )
                     objs.append(
                         IngredientPerRecipe(
-                            recipe=instance, ingredient=ingredient_instance, amount=amount
+                            recipe=instance,
+                            ingredient=ingredient_instance,
+                            amount=amount
                         ))
                 IngredientPerRecipe.objects.bulk_create(objs)
             else:
@@ -262,6 +266,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
         ]
 
+
 class RecipeShortSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(read_only=True)
 
@@ -283,9 +288,10 @@ class UserRecipesSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed',
-        )
+    )
     recipes_count = serializers.SerializerMethodField()
     avatar = serializers.ImageField()
+
     class Meta:
         model = User
         fields = (
@@ -312,7 +318,7 @@ class UserRecipesSerializer(serializers.ModelSerializer):
             if subscribed:
                 return True
         return False
-    
+
     def get_recipes_count(self, obj):
         recipes_count = obj.recipes.count()
         return recipes_count

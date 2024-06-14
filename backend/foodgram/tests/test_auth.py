@@ -1,11 +1,14 @@
-from django.test import TestCase, Client
-from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
-from rest_framework import status
-from foodgram.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
-from users.validators import username_validator
-User = get_user_model()
 from django.contrib.auth.hashers import make_password
+from django.test import TestCase
+from rest_framework import status
+from rest_framework.test import APIClient
+from users.validators import username_validator
+
+from foodgram.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
+
+User = get_user_model()
+
 
 class UserAuthTestCase(TestCase):
     TEST_USER_PASSWORD = 'tes_pas3'
@@ -62,7 +65,6 @@ class UserAuthTestCase(TestCase):
         self.assertIn('auth_token', response.data,
                       msg='В теле ответа должен быть указан auth_token')
 
-
     def test_request_with_lack_of_credentials_doesnt_create_user(self):
         """
         При отсутсвии кокого-либо из необходимых полей,
@@ -107,7 +109,7 @@ class UserAuthTestCase(TestCase):
                 reponse = self.client.post(endpoint, data)
                 self.assertEqual(reponse.status_code,
                                  status.HTTP_400_BAD_REQUEST)
-    
+
     def test_request_with_incorrect_data_wont_create_user(self):
         """
         При попытки создать пользователя с полями несоотвествующими формату,
@@ -134,7 +136,8 @@ class UserAuthTestCase(TestCase):
             ({
                 "email": 'somemail@mail.ru',
                 "username": 'user_with_no_name',
-                "first_name": f'{"Вася"*User._meta.get_field("first_name").max_length}',
+                "first_name":
+                f'{"Вася"*User._meta.get_field("first_name").max_length}',
                 "last_name": "Иванов",
                 "password": 'Secretpas$word'
             }, (f'Пользователь не может задать значения поле имени'
@@ -144,7 +147,8 @@ class UserAuthTestCase(TestCase):
                 "email": 'somemail@mail.ru',
                 "username": 'user_with_long_last_name',
                 "first_name": "Вася",
-                "last_name": f'{"Иванов"*User._meta.get_field("last_name").max_length}',
+                "last_name":
+                f'{"Иванов"*User._meta.get_field("last_name").max_length}',
                 "password": 'Secretpas$word'
             }, (f'Пользователь не может задать значения поле фамилии'
                 f'больше, чем {User._meta.get_field("last_name").max_length}')
@@ -170,7 +174,7 @@ class UserAuthTestCase(TestCase):
             ),
             ({
                 "email": 'somemail@mail.ru',
-                "username": f'test_user',
+                "username": 'test_user',
                 "first_name": "Вася",
                 "last_name": "Иванов",
                 "password": 'Secretpas$word'

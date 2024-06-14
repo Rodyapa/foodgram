@@ -1,9 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import EmailValidator
-from foodgram.constants import (MAX_EMAIL_LENGTH,
-                                MAX_USERNAME_LENGTH,)
+from django.db import models
+
+from foodgram.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 
 
 class CustomUser(AbstractUser):
@@ -14,7 +14,7 @@ class CustomUser(AbstractUser):
     class Roles(models.TextChoices):
         ADMIN = 'admin'
         REGULAR = 'regular'
-    
+
     username = models.CharField(
         verbose_name='Уникалный username',
         max_length=MAX_USERNAME_LENGTH,
@@ -26,7 +26,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         verbose_name='Email пользователя',
         max_length=MAX_EMAIL_LENGTH,
-        validators=[EmailValidator,],
+        validators=[EmailValidator, ],
         unique=True,
 
     )
@@ -54,6 +54,7 @@ class CustomUser(AbstractUser):
 
     REQUIRED_FIELDS = ["username", "last_name", "first_name"]
     USERNAME_FIELD = "email"
+
     @property
     def is_admin(self):
         return self.role == self.Roles.ADMIN
@@ -90,4 +91,3 @@ class Subscription(models.Model):
             models.UniqueConstraint(fields=['user', 'target_user'],
                                     name='user_target_user_unique',)
         ]
-

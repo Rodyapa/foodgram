@@ -1,9 +1,11 @@
 import csv
 import os
+
 from django.conf import settings
-from django.core.management.base import BaseCommand
-from recipes.models import Tag, Recipe, Ingredient
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from recipes.models import Ingredient, Recipe, Tag
+
 User = get_user_model()
 
 
@@ -50,6 +52,8 @@ def recipes_import(row):
 
 def recipes_ingredients(row):
     pass
+
+
 action = {
     'users.csv': user_import,
     'ingredients.csv': ingredients_import,

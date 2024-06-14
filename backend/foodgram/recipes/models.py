@@ -1,10 +1,11 @@
-from typing import Iterable
-from django.db import models
-from slugify import slugify
-from foodgram.constants import MAX_TEXT_DESCRIPTION, MAX_TAG_LENGTH, MAX_NAME, MAX_UNIT_LENGTH
+import shortuuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
-import shortuuid
+from django.db import models
+
+from foodgram.constants import (MAX_NAME, MAX_TAG_LENGTH, MAX_TEXT_DESCRIPTION,
+                                MAX_UNIT_LENGTH)
+
 User = get_user_model()
 
 
@@ -71,7 +72,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[MinValueValidator(1),]
+        validators=[MinValueValidator(1), ]
     )
 
     short_link = models.CharField(max_length=128, unique=True,
@@ -112,7 +113,9 @@ class IngredientPerRecipe(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['ingredient', 'recipe'], name='ingredient_recipe_unique')
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='ingredient_recipe_unique')
         ]
         default_related_name = 'ingredient_recipes'
 
@@ -164,4 +167,3 @@ class ShopingCart(models.Model):
                 name="recipe_in_cart_already",
             ),
         )
-
