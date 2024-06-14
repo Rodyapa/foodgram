@@ -135,6 +135,6 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd foodgram
-          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml pull
-          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml down
-          echo ${{ secrets.SSH_PASSPHRASE }} | sudo -S docker compose -f docker-compose.yml up -d
+          sudo docker compose -f docker-compose.yml pull
+          sudo docker compose -f docker-compose.yml down
+          sudo docker compose -f docker-compose.yml up -d
