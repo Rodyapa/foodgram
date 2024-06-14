@@ -104,7 +104,7 @@ jobs:
       - name: Push to DockerHub
         uses: docker/build-push-action@v4
         with:
-          context: ./nginx/
+          context: ./gateway/
           push: true
           tags: rodypa/foodgram_gateway:latest
   deploy:
@@ -122,9 +122,9 @@ jobs:
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "docker-compose.production.yml"
+        passphrase: ${{ secrets.SSH_PASSWORD }}
+        port: 22
+        source: "docker-compose.yml"
         target: "foodgram"
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
