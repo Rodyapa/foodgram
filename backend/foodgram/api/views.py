@@ -10,11 +10,17 @@ from .serializers import (CustomUserSerializer,
                           AvatarResponseSerializer,
                           )
 from .filters import RecipeFilter
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from users.models import Subscription
-from recipes.models import Tag, Ingredient, Recipe, FavoriteRecipe
+from recipes.models import (Tag, Ingredient, Recipe,
+                            FavoriteRecipe, ShopingCart,
+                            IngredientPerRecipe)
 from rest_framework import authentication, permissions
 from . import permissions as custom_permissions
 from djoser import permissions as djoser_permissions
@@ -151,3 +157,66 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         short_link = f"https://foodgram.example.org/s/{recipe.short_link}"
         return JsonResponse({"short-link": short_link})
+
+    @action(detail=True, methods=['post', 'delete',],
+            permission_classes=(permissions.IsAuthenticated,))
+    def shopping_cart(self, request, pk=None):
+        if request.method == 'POST':
+            if ShopingCart.objects.filter(
+                user=request.user,
+                recipe__id=pk).exists():
+                return Response({
+                    'errors': 'Рецепт уже добавлен в корзину'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            recipe = get_object_or_404(Recipe, id=pk)
+            ShopingCart.objects.create(user=request.user, recipe=recipe)
+            serializer = RecipeShortSerializer(recipe)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        elif request.method == 'DELETE':
+            recipe = get_object_or_404(Recipe, id=pk)
+            obj = ShopingCart.objects.filter(
+                user=request.user,
+                recipe__id=pk)
+            if obj.exists():
+                obj.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({
+                'errors': 'Рецепт уже удален'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        return None
+    
+    @action(detail=False, methods=['get'],
+            permission_classes=[permissions.IsAuthenticated])
+    def download_shopping_cart(self, request):
+        final_list = {}
+        ingredients = IngredientPerRecipe.objects.filter(
+        recipe__shopping_cart__user=request.user).values_list(
+            'ingredient__name', 'ingredient__measurement_unit',
+            'amount')
+        for item in ingredients:
+            name = item[0]
+            if name not in final_list:
+                final_list[name] = {
+                    'measurement_unit': item[1],
+                    'amount': item[2]
+            }
+            else:
+                final_list[name]['amount'] += item[2]
+        pdfmetrics.registerFont(
+            TTFont('Lato-Regular', 'Lato-Regular.ttf', 'UTF-8'))
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = ('attachment; '
+                                           'filename="shopping_list.pdf"')
+        page = canvas.Canvas(response)
+        page.setFont('Lato-Regular', size=18)
+        page.drawString(200, 800, 'Список ингредиентов')
+        page.setFont('Lato-Regular', size=16)
+        height = 750
+        for i, (name, data) in enumerate(final_list.items(), 1):
+            page.drawString(75, height, (f'{i}.  {name} - {data["amount"]}, '
+                                         f'{data["measurement_unit"]}'))
+            height -= 25
+        page.showPage()
+        page.save()
+        return response
