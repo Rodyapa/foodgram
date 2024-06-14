@@ -33,7 +33,7 @@ services:
   gateway:
     depends_on:
       - backend
-    image: rodypa/backend_gateway
+    image: rodypa/foodgram_gateway
     volumes:
       - static:/staticfiles/
       - media:/app/media/
