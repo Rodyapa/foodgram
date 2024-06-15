@@ -1,6 +1,6 @@
-from django.contrib.admin import (ModelAdmin, register, site)
+from django.contrib.admin import ModelAdmin, register, site
 from django.utils.safestring import SafeString, mark_safe
-from recipes.models import (Ingredient, Recipe)
+from recipes.models import Ingredient, Recipe
 from users.models import CustomUser
 
 site.site_header = "Foodgram администрирование"
