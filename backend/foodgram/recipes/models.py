@@ -146,7 +146,7 @@ class IngredientPerRecipe(models.Model):
         default_related_name = 'ingredient_recipes'
 
     def __str__(self) -> str:
-        return f'Amount of  {self.ingredient.name} in the {self.user.recipe}'
+        return f'Amount of  {self.ingredient.name} in the {self.recipe.name}'
 
 
 class FavoriteRecipe(models.Model):
