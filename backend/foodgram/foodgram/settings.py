@@ -177,6 +177,3 @@ DJOSER = {
     }
 }
 
-
-CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ['https://foodgram.risetime.ru', ]
