@@ -1,5 +1,4 @@
 from django.contrib.admin import ModelAdmin, register, site
-from django.utils.safestring import SafeString, mark_safe
 from recipes.models import Ingredient, Recipe
 from users.models import CustomUser
 
@@ -17,7 +16,6 @@ class RecipeAdmin(ModelAdmin):
     list_display = (
         "name",
         "author",
-        "get_image",
     )
     fields = (
         (
@@ -29,7 +27,6 @@ class RecipeAdmin(ModelAdmin):
             "tags",
         ),
         ("text",),
-        ("image",),
         (
             "count_favorites",
         )
@@ -41,11 +38,6 @@ class RecipeAdmin(ModelAdmin):
         "tags__name",
     )
     list_filter = ("name", "author__username", "tags__name")
-
-    def get_image(self, obj: Recipe) -> SafeString:
-        return mark_safe(f'<img src={obj.image.url} width="80" hieght="30"')
-
-    get_image.short_description = "Изображение"
 
     def count_favorites(self, obj):
         return obj.in_favorites.count()
