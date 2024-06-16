@@ -22,6 +22,14 @@ class Tag(models.Model):
         unique=True
     )
 
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = "Тэг"
+        verbose_name_plural = "Тэги"
+        ordering = ("name",)
+
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -32,6 +40,9 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения',
         max_length=MAX_UNIT_LENGTH
     )
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Recipe(models.Model):
@@ -75,6 +86,12 @@ class Recipe(models.Model):
         validators=[MinValueValidator(1), ]
     )
 
+    pub_date = models.DateTimeField(
+        verbose_name="Дата публикации",
+        auto_now_add=True,
+        editable=False,
+    )
+
     short_link = models.CharField(max_length=128, unique=True,
                                   default=shortuuid.ShortUUID().random())
 
@@ -86,11 +103,18 @@ class Recipe(models.Model):
         super(Recipe, self).save(*args, **kwargs)
 
     class Meta:
-        '''constraints = [
-            models.UniqueConstraint(fields=['author', 'name'],
-                                    name='author_name_unique',
-                                    )
-        ]'''
+        verbose_name = "Рецепт"
+        verbose_name_plural = "Рецепты"
+        ordering = ("-pub_date",)
+        constraints = (
+            models.UniqueConstraint(
+                fields=("name", "author"),
+                name="unique_for_author",
+            ),
+        )
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class IngredientPerRecipe(models.Model):
@@ -112,12 +136,17 @@ class IngredientPerRecipe(models.Model):
     )
 
     class Meta:
+        verbose_name = "Количество ингридиента"
+        verbose_name_plural = "Количество ингридиентов"
         constraints = [
             models.UniqueConstraint(
                 fields=['ingredient', 'recipe'],
                 name='ingredient_recipe_unique')
         ]
         default_related_name = 'ingredient_recipes'
+
+    def __str__(self) -> str:
+        return f'Amount of  {self.ingredient.name} in the {self.user.recipe}'
 
 
 class FavoriteRecipe(models.Model):
@@ -134,11 +163,16 @@ class FavoriteRecipe(models.Model):
     )
 
     class Meta:
+        verbose_name = "Избранный рецепт"
+        verbose_name_plural = "Избранные рецепты"
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
                 name='user_recipe_unique')
         ]
+
+    def __str__(self) -> str:
+        return f'favorite {self.recipe.name} of {self.user.username}'
 
 
 class ShopingCart(models.Model):
@@ -167,3 +201,6 @@ class ShopingCart(models.Model):
                 name="recipe_in_cart_already",
             ),
         )
+
+    def __str__(self) -> str:
+        return f'{self.recipe.name} in cart of {self.user.username}'
