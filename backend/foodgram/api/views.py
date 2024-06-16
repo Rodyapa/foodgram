@@ -82,25 +82,26 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
 
-
-class AvatarView(views.APIView):
-    permission_classes = [djoser_permissions.CurrentUserOrAdminOrReadOnly]
-
-    def put(self, request):
-        serializer = AvatarSerializer(data=request.data)
-        if serializer.is_valid():
-            request.user.avatar = serializer.validated_data['avatar']
-            request.user.save()
-            response = AvatarResponseSerializer(request.user)
-            return Response(response.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request):
-        request.user.avatar.delete()
-        return Response(
-            {'message': 'Avatar deleted successfully'},
-            status=status.HTTP_204_NO_CONTENT
-        )
+    @action(methods=['put', 'delete'], detail=False,
+            permission_classes=[
+                permissions.IsAuthenticated,
+            ])
+    def me(self, request):
+        if request.method == 'PUT':
+            serializer = AvatarSerializer(data=request.data)
+            if serializer.is_valid():
+                request.user.avatar = serializer.validated_data['avatar']
+                request.user.save()
+                response = AvatarResponseSerializer(request.user)
+                return Response(response.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+        if request.method == 'DELETE':
+            request.user.avatar.delete()
+            return Response(
+                {'message': 'Avatar deleted successfully'},
+                status=status.HTTP_204_NO_CONTENT
+            )
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
