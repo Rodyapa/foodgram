@@ -16,6 +16,7 @@ class RecipeAdmin(ModelAdmin):
     list_display = (
         "name",
         "author",
+        "count_favorites"
     )
     fields = (
         (
@@ -26,10 +27,7 @@ class RecipeAdmin(ModelAdmin):
             "author",
             "tags",
         ),
-        ("text",),
-        (
-            "count_favorites",
-        )
+        ("text",)
     )
     raw_id_fields = ("author",)
     search_fields = (
