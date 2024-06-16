@@ -176,3 +176,6 @@ DJOSER = {
         'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     }
 }
+
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ['https://foodgram.risetime.ru', ]
