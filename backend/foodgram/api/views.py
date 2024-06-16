@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser import permissions as djoser_permissions
 from djoser import views as djoser_views
 from recipes.models import (FavoriteRecipe, Ingredient, IngredientPerRecipe,
                             Recipe, ShopingCart, Tag)
@@ -10,7 +9,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import filters as drf_filters
-from rest_framework import permissions, status, views, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -83,9 +82,7 @@ class CustomUserViewSet(djoser_views.UserViewSet):
         return Response(serializer.errors)
 
     @action(methods=['put', 'delete'], detail=False,
-            permission_classes=[
-                permissions.IsAuthenticated,
-            ])
+            permission_classes=[permissions.IsAuthenticated, ])
     def me(self, request):
         if request.method == 'PUT':
             serializer = AvatarSerializer(data=request.data)
