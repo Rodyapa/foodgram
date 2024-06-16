@@ -83,7 +83,7 @@ class CustomUserViewSet(djoser_views.UserViewSet):
 
     @action(methods=['put', 'delete'], detail=False,
             permission_classes=[permissions.IsAuthenticated, ],
-            url_path='me/avatar/')
+            url_path='me/avatar')
     def avatar(self, request):
         if request.method == 'PUT':
             serializer = AvatarSerializer(data=request.data)
