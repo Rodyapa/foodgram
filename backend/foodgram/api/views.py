@@ -81,9 +81,10 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             return Response(serializer.data)
         return Response(serializer.errors)
 
-    @action(methods=['put', 'delete', 'get'], detail=False,
-            permission_classes=[permissions.IsAuthenticated, ])
-    def me(self, request):
+    @action(methods=['put', 'delete'], detail=False,
+            permission_classes=[permissions.IsAuthenticated, ],
+            url_path='me/avatar/')
+    def avatar(self, request):
         if request.method == 'PUT':
             serializer = AvatarSerializer(data=request.data)
             if serializer.is_valid():
@@ -99,13 +100,6 @@ class CustomUserViewSet(djoser_views.UserViewSet):
                 {'message': 'Avatar deleted successfully'},
                 status=status.HTTP_204_NO_CONTENT
             )
-        if request.method == 'GET':
-            serializer = CustomUserSerializer(data=request.user,
-                                              context={"request": request})
-            if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
