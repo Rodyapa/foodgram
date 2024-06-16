@@ -23,7 +23,7 @@ services:
     env_file: .env
     volumes:
       - static:/backend_static
-      - media:/app/media/
+      - media:/app/foodgram/media/
   frontend:
     env_file: .env
     image: rodypa/foodgram_frontend
@@ -36,6 +36,6 @@ services:
     image: rodypa/foodgram_gateway
     volumes:
       - static:/staticfiles/
-      - media:/app/media/
+      - media:/app/foodgram/media/
     ports:
       - 8050:80
