@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
 from recipes.models import (FavoriteRecipe, Ingredient, IngredientPerRecipe,
@@ -20,7 +21,7 @@ from .serializers import (AvatarResponseSerializer, AvatarSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           SubscriptionSerializer, TagSerializer,
                           UserRecipesSerializer)
-
+from .mixins import M2MMixin
 User = get_user_model()
 
 
@@ -118,7 +119,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class RecipeViewSet(viewsets.ModelViewSet,
+                    M2MMixin):
 
     permission_classes = [custom_permissions.IsAuthorOrIsStaffOrReadOnly, ]
     serializer_class = RecipeSerializer
@@ -129,69 +131,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, methods=['post', 'delete'],
-            serializer_class=UserRecipesSerializer,
+    @action(detail=True, serializer_class=UserRecipesSerializer,
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        if request.method == 'POST':
-            if FavoriteRecipe.objects.filter(
-                    user=request.user,
-                    recipe__id=pk).exists():
-                return Response({
-                    'errors': 'Рецепт уже добавлен в избранное'
-                }, status=status.HTTP_400_BAD_REQUEST
-                )
-            FavoriteRecipe.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            obj = FavoriteRecipe.objects.filter(
-                user=request.user,
-                recipe__id=pk)
-            if obj.exists():
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response({
-                'errors': 'Рецепт уже удален'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        return None
+        """Добавляет рецепт в избранное или удаляет от туда."""
+    @favorite.mapping.post
+    def add_recipe_to_favorites(self, request, pk):
+        self.link_model = FavoriteRecipe
+        return self.create_relation(pk)
 
-    @action(detail=True, methods=['get'],
-            url_path='get-link'
-            )
-    def get_link(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        short_link = f"https://foodgram.example.org/s/{recipe.short_link}"
-        return JsonResponse({"short-link": short_link})
+    @favorite.mapping.delete
+    def remove_recipe_from_favorites(self, request, pk):
+        self.link_model = FavoriteRecipe
+        return self.delete_relation(Q(recipe_id=pk))
 
-    @action(detail=True, methods=['post', 'delete', ],
+
+    @action(detail=True, 
             permission_classes=(permissions.IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
-        if request.method == 'POST':
-            if ShopingCart.objects.filter(user=request.user,
-                                          recipe__id=pk).exists():
-                return Response({
-                    'errors': 'Рецепт уже добавлен в корзину'
-                }, status=status.HTTP_400_BAD_REQUEST
-                )
-            recipe = get_object_or_404(Recipe, id=pk)
-            ShopingCart.objects.create(user=request.user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        """Добавляет рецепт в корзину или удаляет его от туда."""
 
-        elif request.method == 'DELETE':
-            recipe = get_object_or_404(Recipe, id=pk)
-            obj = ShopingCart.objects.filter(
-                user=request.user,
-                recipe__id=pk)
-            if obj.exists():
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response({
-                'errors': 'Рецепт уже удален'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        return None
+    @shopping_cart.mapping.post
+    def add_recipe_to_shopping_cart(self, request, pk):
+        self.link_model = ShopingCart
+        return self.create_relation(pk)
+
+    @shopping_cart.mapping.delete
+    def remove_recipe_from_shopping_cart(self, request, pk):
+        self.link_model = ShopingCart
+        return self.delete_relation(Q(recipe__id=pk))
 
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
@@ -227,3 +195,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         page.showPage()
         page.save()
         return response
+
+    @action(detail=True, methods=['get'],
+            url_path='get-link'
+            )
+    def get_link(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        short_link = f"https://foodgram.example.org/s/{recipe.short_link}"
+        return JsonResponse({"short-link": short_link})

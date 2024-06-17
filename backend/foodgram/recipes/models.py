@@ -2,7 +2,7 @@ import shortuuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
+from .validators import HexColorValidator
 from foodgram.constants import (MAX_NAME, MAX_TAG_LENGTH, MAX_TEXT_DESCRIPTION,
                                 MAX_UNIT_LENGTH)
 
@@ -20,6 +20,12 @@ class Tag(models.Model):
     slug = models.SlugField(
         verbose_name='уникальное название тега',
         unique=True
+    )
+    color = models.CharField(
+        verbose_name="Цвет",
+        max_length=7,
+        unique=True,
+        validators=(HexColorValidator, )
     )
 
     def __str__(self) -> str:
@@ -83,7 +89,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
-        validators=[MinValueValidator(1), ]
+        validators=[MinValueValidator(1), MaxValueValidator(600)]
     )
 
     pub_date = models.DateTimeField(
@@ -129,7 +135,7 @@ class IngredientPerRecipe(models.Model):
         on_delete=models.CASCADE
     )
     amount = models.PositiveSmallIntegerField(
-        validators=(MaxValueValidator(10000),),
+        validators=(MaxValueValidator(10000), MinValueValidator(1)),
         verbose_name='Количество',
         default=1,
         blank=False
@@ -147,6 +153,26 @@ class IngredientPerRecipe(models.Model):
 
     def __str__(self) -> str:
         return f'Amount of  {self.ingredient.name} in the {self.recipe.name}'
+
+
+class UserRelatedConditionOfRecipe(models.Model):
+
+    user = models.ForeignKey(
+        to=User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+    )
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self) -> str:
+        return f'{self.recipe.name} of {self.user.username}'
 
 
 class FavoriteRecipe(models.Model):
