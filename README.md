@@ -79,12 +79,12 @@ sudo docker-compose up -d --build
 
     *Соберите статические файлы:
 ```
-sudo docker-compose exec backend python manage.py collectstatic --noinput
+sudo docker-compose exec backend/foodgram python manage.py collectstatic --noinput
 ```
     *Примените миграции:
 
 ```
-sudo docker-compose exec backend python manage.py migrate --noinput
+sudo docker-compose exec backend/foodgram python manage.py migrate --noinput
 ```
 
     *Создать суперпользователя Django:
@@ -92,7 +92,7 @@ sudo docker-compose exec backend python manage.py migrate --noinput
 ```
 sudo docker-compose exec backend python manage.py create_default_su
 ```
-        Проект будет доступен по вашему IP
+     Проект будет доступен по вашему IP
 
 
 ## Технологии:
