@@ -4,8 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
-from recipes.models import (FavoriteRecipe, Ingredient,
-                            Recipe, ShopingCart, Tag)
+from recipes.models import FavoriteRecipe, Ingredient, Recipe, ShopingCart, Tag
 from rest_framework import filters as drf_filters
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
