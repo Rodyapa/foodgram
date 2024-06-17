@@ -2,9 +2,11 @@ import shortuuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from .validators import HexColorValidator
+
 from foodgram.constants import (MAX_NAME, MAX_TAG_LENGTH, MAX_TEXT_DESCRIPTION,
                                 MAX_UNIT_LENGTH)
+
+from .validators import HexColorValidator
 
 User = get_user_model()
 

@@ -1,14 +1,11 @@
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
-from recipes.models import (FavoriteRecipe, Ingredient, IngredientPerRecipe,
+from recipes.models import (FavoriteRecipe, Ingredient,
                             Recipe, ShopingCart, Tag)
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
 from rest_framework import filters as drf_filters
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -16,12 +13,14 @@ from rest_framework.response import Response
 
 from . import permissions as custom_permissions
 from .filters import RecipeFilter
+from .mixins import M2MMixin
 from .serializers import (AvatarResponseSerializer, AvatarSerializer,
                           CustomUserSerializer, IngredientSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           SubscriptionSerializer, TagSerializer,
                           UserRecipesSerializer)
-from .mixins import M2MMixin
+from .utils import create_ingredients_list, make_pdf_file_of_ingredients
+
 User = get_user_model()
 
 
@@ -145,8 +144,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
         self.link_model = FavoriteRecipe
         return self.delete_relation(Q(recipe_id=pk))
 
-
-    @action(detail=True, 
+    @action(detail=True,
             permission_classes=(permissions.IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
         """Добавляет рецепт в корзину или удаляет его от туда."""
@@ -164,37 +162,8 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
-        final_list = {}
-        ingredients = IngredientPerRecipe.objects.filter(
-            recipe__shoppingcart_set__user=request.user).values_list(
-            'ingredient__name', 'ingredient__measurement_unit',
-            'amount')
-        for item in ingredients:
-            name = item[0]
-            if name not in final_list:
-                final_list[name] = {
-                    'measurement_unit': item[1],
-                    'amount': item[2]
-                }
-            else:
-                final_list[name]['amount'] += item[2]
-        pdfmetrics.registerFont(
-            TTFont('Lato-Regular', 'Lato-Regular.ttf', 'UTF-8'))
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = ('attachment; '
-                                           'filename="shopping_list.pdf"')
-        page = canvas.Canvas(response)
-        page.setFont('Lato-Regular', size=18)
-        page.drawString(200, 800, 'Список ингредиентов')
-        page.setFont('Lato-Regular', size=16)
-        height = 750
-        for i, (name, data) in enumerate(final_list.items(), 1):
-            page.drawString(75, height, (f'{i}.  {name} - {data["amount"]}, '
-                                         f'{data["measurement_unit"]}'))
-            height -= 25
-        page.showPage()
-        page.save()
-        return response
+        final_list = create_ingredients_list(request)
+        return make_pdf_file_of_ingredients(final_list)
 
     @action(detail=True, methods=['get'],
             url_path='get-link'

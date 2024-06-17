@@ -6,8 +6,10 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 from users.models import Subscription
 from users.validators import CantSubscribeMyselfValdiator, username_validator
-from .fields import Base64ImageField
+
 from foodgram.constants import MAX_USERNAME_LENGTH
+
+from .fields import Base64ImageField
 
 User = get_user_model()
 
@@ -177,7 +179,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
-        is_in_shopping_cart = user.shoppingcart_set.filter(recipe=recipe).exists()
+        shopping_cart = user.shoppingcart_set.filter(recipe=recipe)
+        is_in_shopping_cart = shopping_cart.exists()
         return is_in_shopping_cart
 
     def create(self, validated_data):

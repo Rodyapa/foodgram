@@ -1,5 +1,7 @@
-from django.core.exceptions import ValidationError
 from string import hexdigits
+
+from django.core.exceptions import ValidationError
+
 
 class HexColorValidator:
     """Проверяет что цвет соответсвует формату

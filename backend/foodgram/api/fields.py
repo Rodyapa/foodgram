@@ -1,7 +1,8 @@
-from rest_framework.serializers import ImageField
 import base64
 import uuid
+
 from django.core.files.base import ContentFile
+from rest_framework.serializers import ImageField
 
 
 class Base64ImageField(ImageField):
