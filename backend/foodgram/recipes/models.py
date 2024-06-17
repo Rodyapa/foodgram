@@ -177,8 +177,7 @@ class UserRelatedConditionOfRecipe(models.Model):
         return f'{self.recipe.name} of {self.user.username}'
 
 
-class FavoriteRecipe(models.Model):
-
+class FavoriteRecipe(UserRelatedConditionOfRecipe):
     class Meta:
         verbose_name = "Избранный рецепт"
         verbose_name_plural = "Избранные рецепты"
@@ -189,8 +188,7 @@ class FavoriteRecipe(models.Model):
         ]
 
 
-class ShopingCart(models.Model):
-
+class ShopingCart(UserRelatedConditionOfRecipe):
     class Meta:
         verbose_name = "Рецепт в списке покупок"
         verbose_name_plural = "Рецепты в списке покупок"
