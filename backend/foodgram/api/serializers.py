@@ -170,14 +170,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
         if not user.is_authenticated:
             return False
-        in_favourite = user.favorites.filter(recipe=recipe).exists()
+        in_favourite = user.favoriterecipe_set.filter(recipe=recipe).exists()
         return in_favourite
 
     def get_is_in_shopping_cart(self, recipe):
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
-        is_in_shopping_cart = user.shopping_cart.filter(recipe=recipe).exists()
+        is_in_shopping_cart = user.shoppingcart_set.filter(recipe=recipe).exists()
         return is_in_shopping_cart
 
     def create(self, validated_data):

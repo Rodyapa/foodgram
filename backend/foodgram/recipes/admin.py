@@ -38,9 +38,9 @@ class RecipeAdmin(ModelAdmin):
     list_filter = ("name", "author__username", "tags__name")
 
     def count_favorites(self, obj):
-        return obj.favorites.count()
+        return obj.favoriterecipe_set.count()
 
-    count_favorites.short_description = "В избранном"
+    count_favoriterecipe_set.short_description = "В избранном"
 
 
 @register(Ingredient)

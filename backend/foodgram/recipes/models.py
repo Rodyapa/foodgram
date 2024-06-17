@@ -176,18 +176,6 @@ class UserRelatedConditionOfRecipe(models.Model):
 
 
 class FavoriteRecipe(models.Model):
-    user = models.ForeignKey(
-        to=User,
-        verbose_name='Пользователь',
-        on_delete=models.CASCADE,
-        related_name='favorites'
-    )
-    recipe = models.ForeignKey(
-        to=Recipe,
-        verbose_name='Избранный рецепт',
-        on_delete=models.CASCADE,
-        related_name='favorites'
-    )
 
     class Meta:
         verbose_name = "Избранный рецепт"
@@ -198,23 +186,8 @@ class FavoriteRecipe(models.Model):
                 name='user_recipe_unique')
         ]
 
-    def __str__(self) -> str:
-        return f'favorite {self.recipe.name} of {self.user.username}'
-
 
 class ShopingCart(models.Model):
-    user = models.ForeignKey(
-        to=User,
-        verbose_name='Пользователь',
-        on_delete=models.CASCADE,
-        related_name='shopping_cart'
-    )
-    recipe = models.ForeignKey(
-        to=Recipe,
-        verbose_name='Рецепты списка покупок',
-        on_delete=models.CASCADE,
-        related_name='shopping_cart'
-    )
 
     class Meta:
         verbose_name = "Рецепт в списке покупок"
@@ -228,6 +201,3 @@ class ShopingCart(models.Model):
                 name="recipe_in_cart_already",
             ),
         )
-
-    def __str__(self) -> str:
-        return f'{self.recipe.name} in cart of {self.user.username}'
