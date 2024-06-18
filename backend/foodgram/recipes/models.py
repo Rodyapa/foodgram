@@ -28,7 +28,8 @@ class Tag(models.Model):
         max_length=7,
         unique=True,
         validators=(HexColorValidator, ),
-        default='#FFFFFF'
+        default='#FFFFFF',
+        db_index=False
     )
 
     def __str__(self) -> str:
