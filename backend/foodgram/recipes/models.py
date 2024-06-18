@@ -27,7 +27,8 @@ class Tag(models.Model):
         verbose_name="Цвет",
         max_length=7,
         unique=True,
-        validators=(HexColorValidator, )
+        validators=(HexColorValidator, ),
+        default='#FFFFFF'
     )
 
     def __str__(self) -> str:
