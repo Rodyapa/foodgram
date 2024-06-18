@@ -9,7 +9,7 @@ from rest_framework import filters as drf_filters
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from rest_framework.pagination import LimitOffsetPagination
 from . import permissions as custom_permissions
 from .filters import RecipeFilter
 from .mixins import M2MMixin
@@ -125,6 +125,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
     queryset = Recipe.objects.select_related("author")
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+    pagination_class = (LimitOffsetPagination, )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
