@@ -22,7 +22,7 @@ class M2MMixin:
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        serializer: ModelSerializer = self.add_serializer(obj)
+        serializer = self.add_serializer(obj)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
     def _delete_relation(self, q: Q) -> Response:
