@@ -26,7 +26,6 @@ class Tag(models.Model):
     color = models.CharField(
         verbose_name="Цвет",
         max_length=7,
-        unique=True,
         validators=(HexColorValidator, ),
         default='#FFFFFF',
         db_index=False
