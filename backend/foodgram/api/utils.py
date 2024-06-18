@@ -10,7 +10,7 @@ def create_ingredients_list(request):
     final_list = {}
     ingredients = IngredientPerRecipe.objects.filter(
         recipe__in_cart__user=request.user).annotate(
-            total_amount=Sum("amount")).order_by('name').values_list(
+            total_amount=Sum("amount")).order_by('recipe__name').values_list(
             'ingredient__name', 'ingredient__measurement_unit',
             'amount')
     for item in ingredients:
