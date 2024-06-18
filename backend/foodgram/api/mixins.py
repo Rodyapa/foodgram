@@ -15,7 +15,7 @@ class M2MMixin:
     def _create_relation(self, obj_id):
         obj = get_object_or_404(self.queryset, pk=obj_id)
         try:
-            self.link_model(recipe=obj.pk, user=self.request.user.pk).save()
+            self.link_model(recipe=obj, user=self.request.user).save()
         except IntegrityError:
             return Response(
                 {"error": "Действие выполнено ранее."},
