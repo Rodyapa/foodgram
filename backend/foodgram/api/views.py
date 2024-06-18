@@ -29,6 +29,7 @@ class CustomUserViewSet(djoser_views.UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = PageNumberLimitPagination
 
     def get_permissions(self):
         if self.action == 'me':
