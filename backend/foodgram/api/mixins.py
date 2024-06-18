@@ -9,7 +9,6 @@ from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 
 class M2MMixin:
 
-    add_serializer: ModelSerializer | None = None
     link_model: Model | None = None
 
     def _create_relation(self, obj_id):
@@ -22,7 +21,7 @@ class M2MMixin:
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        serializer = self.add_serializer(obj)
+        serializer = ModelSerializer(obj)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
     def _delete_relation(self, q: Q) -> Response:
