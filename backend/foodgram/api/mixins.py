@@ -20,7 +20,7 @@ class M2MMixin:
                 {"error": "Действие выполнено ранее."},
                 status=HTTP_400_BAD_REQUEST,
             )
-        serializer = RecipeSerializer(obj)
+        serializer = RecipeSerializer(obj, context={"request": self.request})
         return Response(serializer.data, status=HTTP_201_CREATED)
 
     def _delete_relation(self, q: Q) -> Response:
