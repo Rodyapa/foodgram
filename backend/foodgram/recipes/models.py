@@ -190,6 +190,14 @@ class FavoriteRecipe(UserRelatedConditionOfRecipe):
 
 
 class ShopingCart(UserRelatedConditionOfRecipe):
+
+    recipe = models.ForeignKey(
+        to=Recipe,
+        verbose_name='Рецепт',
+        on_delete=models.CASCADE,
+        related_name='in_cart'
+    )
+
     class Meta:
         verbose_name = "Рецепт в списке покупок"
         verbose_name_plural = "Рецепты в списке покупок"

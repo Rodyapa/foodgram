@@ -9,7 +9,7 @@ from reportlab.pdfgen import canvas
 def create_ingredients_list(request):
     final_list = {}
     ingredients = IngredientPerRecipe.objects.filter(
-        recipe_shopingcart_set__user=request.user).annotate(
+        recipe__in_cart__user=request.user).annotate(
             total_amount=Sum("amount")).order_by('name').values_list(
             'ingredient__name', 'ingredient__measurement_unit',
             'amount')
