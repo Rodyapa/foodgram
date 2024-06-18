@@ -34,7 +34,7 @@ def make_pdf_file_of_ingredients(final_list):
     page.setFont('Lato-Regular', size=16)
     height = 750
     for i, (name, data) in enumerate(final_list.items(), 1):
-        page.drawString(75, height, (f'{i}.  {name} - {data["amount"]}, '
+        page.drawString(75, height, (f'{i}.  {name} - {data["total_amount"]}, '
                                      f'{data["measurement_unit"]}'))
         height -= 25
     page.showPage()
