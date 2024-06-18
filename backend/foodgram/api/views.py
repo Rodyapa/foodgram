@@ -126,7 +126,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
     queryset = Recipe.objects.select_related("author")
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    pagination_class = (LimitOffsetPagination, )
+    pagination_class = LimitOffsetPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
