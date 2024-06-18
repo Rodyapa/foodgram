@@ -12,10 +12,10 @@ class M2MMixin:
     add_serializer: ModelSerializer | None = None
     link_model: Model | None = None
 
-    def create_relation(self, obj_id):
+    def _create_relation(self, obj_id):
         obj = get_object_or_404(self.queryset, pk=obj_id)
         try:
-            self.link_model(None, obj.pk, self.request.user.pk).save()
+            self.link_model(recipe=obj.pk, user=self.request.user.pk).save()
         except IntegrityError:
             return Response(
                 {"error": "Действие выполнено ранее."},
@@ -25,7 +25,7 @@ class M2MMixin:
         serializer: ModelSerializer = self.add_serializer(obj)
         return Response(serializer.data, status=HTTP_201_CREATED)
 
-    def delete_relation(self, q: Q) -> Response:
+    def _delete_relation(self, q: Q) -> Response:
         deleted, _ = (
             self.link_model.objects.filter(q & Q(user=self.request.user))
             .first()

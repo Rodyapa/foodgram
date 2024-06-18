@@ -136,12 +136,12 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @favorite.mapping.post
     def add_recipe_to_favorites(self, request, pk):
         self.link_model = FavoriteRecipe
-        return self.create_relation(pk)
+        return self._create_relation(pk)
 
     @favorite.mapping.delete
     def remove_recipe_from_favorites(self, request, pk):
         self.link_model = FavoriteRecipe
-        return self.delete_relation(Q(recipe_id=pk))
+        return self._delete_relation(Q(recipe_id=pk))
 
     @action(detail=True,
             permission_classes=(permissions.IsAuthenticated,))
@@ -151,12 +151,12 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @shopping_cart.mapping.post
     def add_recipe_to_shopping_cart(self, request, pk):
         self.link_model = ShopingCart
-        return self.create_relation(pk)
+        return self._create_relation(pk)
 
     @shopping_cart.mapping.delete
     def remove_recipe_from_shopping_cart(self, request, pk):
         self.link_model = ShopingCart
-        return self.delete_relation(Q(recipe__id=pk))
+        return self._delete_relation(Q(recipe__id=pk))
 
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
