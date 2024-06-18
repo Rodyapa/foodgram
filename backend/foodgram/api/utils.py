@@ -11,12 +11,12 @@ def create_ingredients_list(request):
     ingredients = IngredientPerRecipe.objects.filter(
         recipe__shopingcart__user=request.user).values_list(
         'ingredient__name', 'ingredient__measurement_unit',
-        'amount').annotate(amount=Sum("amount")).order_by('name')
+        'amount').annotate(total_amount=Sum("amount")).order_by('name')
     for item in ingredients:
         name = item[0]
         final_list[name] = {
             'measurement_unit': item[1],
-            'amount': item[2]
+            'total_amount': item[2]
         }
     return final_list
 
