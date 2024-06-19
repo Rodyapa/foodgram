@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from . import permissions as custom_permissions
 from .filters import RecipeFilter
-from .mixins import M2MMixin
+from .mixins import AddDeleteManyToManyRelationMixin
 from .paginators import PageNumberLimitPagination
 from .serializers import (AvatarResponseSerializer, AvatarSerializer,
                           CustomUserSerializer, IngredientSerializer,
@@ -120,7 +120,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet,
-                    M2MMixin):
+                    AddDeleteManyToManyRelationMixin):
 
     permission_classes = [custom_permissions.IsAuthorOrIsStaffOrReadOnly, ]
     serializer_class = RecipeSerializer

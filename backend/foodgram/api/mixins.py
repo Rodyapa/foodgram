@@ -8,7 +8,7 @@ from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
 from .serializers import RecipeSerializer
 
 
-class M2MMixin:
+class AddDeleteManyToManyRelationMixin:
     link_model: Model | None = None
 
     def _create_relation(self, obj_id):
