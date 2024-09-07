@@ -36,7 +36,7 @@ jobs:
         export PATH="$HOME/.local/bin:$PATH"
     - name: Install dependencies with Poetry
       run: |
-        cd ./backend/
+        cd ./backend/foodgram/
         poetry install
 
     - name: Test with flake8 and django tests
@@ -47,9 +47,9 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       run: |
-        sudo /root/.local/bin/poetry  run flake8 backend/
+        poetry  run flake8 backend/
         cd backend/foodgram/
-        sudo /root/.local/bin/poetry  run python manage.py test 
+        poetry  run python manage.py test 
 
   build_and_push_to_docker_hub:
     if: github.ref == 'refs/heads/main'
