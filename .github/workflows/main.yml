@@ -37,7 +37,7 @@ jobs:
     - name: Install dependencies with Poetry
       run: |
         cd ./backend/
-        echo ${{ secrets.SSH_PASSWORD }} | sudo -S /root/.local/bin/poetry install
+        poetry install
 
     - name: Test with flake8 and django tests
       env:
