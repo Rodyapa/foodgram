@@ -36,7 +36,7 @@ jobs:
         export PATH="$HOME/.local/bin:$PATH"
     - name: Install dependencies with Poetry
       run: |
-        sudo cd backend/
+        cd ./backend/
         /root/.local/bin/poetry install
 
     - name: Test with flake8 and django tests
