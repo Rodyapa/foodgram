@@ -37,7 +37,7 @@ jobs:
     - name: Install dependencies with Poetry
       run: |
         cd ./backend/
-        sudo /root/.local/bin/poetry install
+        echo ${{ secrets.SSH_PASSWORD }} | sudo -S /root/.local/bin/poetry install
 
     - name: Test with flake8 and django tests
       env:
@@ -130,7 +130,7 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.HOST_USER }}
         key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        password: ${{ secrets.SSH_PASSWORD }}
         source: "infra/docker-compose.yml"
         target: "foodgram/"
     - name: Executing remote ssh commands to deploy
@@ -139,9 +139,9 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.HOST_USER }}
         key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        password: ${{ secrets.SSH_PASSWORD }}
         script: |
           cd foodgram
-          sudo docker compose -f docker-compose.yml pull
-          sudo docker compose -f docker-compose.yml down
-          sudo docker compose -f docker-compose.yml up -d
+          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml pull
+          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml down
+          echo ${{ secrets.SSH_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml up -d
