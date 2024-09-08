@@ -48,6 +48,7 @@ jobs:
         DB_PORT: 5432
       run: |
         ls
+        pwd
         cd ./backend/foodgram/
         poetry  run flake8 ~/backend/
         cd backend/foodgram/
