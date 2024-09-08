@@ -49,7 +49,7 @@ jobs:
       run: |
         ls
         pwd
-        cd /backend/foodgram/
+        cd backend
         poetry  run flake8 ~/backend/
         poetry  run python ~/backend/foodgram/manage.py test 
 
