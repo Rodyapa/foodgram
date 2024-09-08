@@ -50,6 +50,7 @@ jobs:
         ls
         pwd
         cd backend
+        ls
         poetry  run flake8 ~/backend/
         poetry  run python ~/backend/foodgram/manage.py test 
 
