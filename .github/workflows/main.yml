@@ -50,8 +50,8 @@ jobs:
         ls
         pwd
         cd backend/foodgram
-        poetry  run flake8 ../../
-        poetry  run python ~/backend/foodgram/manage.py test 
+        poetry  run flake8 /home/runner/work/foodgram/foodgram/backend
+        poetry  run python /home/runner/work/foodgram/foodgram/backend/foodgram/manage.py test 
 
   build_and_push_to_docker_hub:
     if: github.ref == 'refs/heads/main'
