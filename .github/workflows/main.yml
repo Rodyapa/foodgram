@@ -49,9 +49,8 @@ jobs:
       run: |
         ls
         pwd
-        cd ./backend/foodgram/
+        cd /backend/foodgram/
         poetry  run flake8 ~/backend/
-        cd backend/foodgram/
         poetry  run python ~/backend/foodgram/manage.py test 
 
   build_and_push_to_docker_hub:
