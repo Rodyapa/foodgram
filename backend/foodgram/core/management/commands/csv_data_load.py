@@ -48,7 +48,7 @@ def recipes_import(row):
     # Handle the image file
     if image_path:
         # Open the image file
-        with open(os.path.join(settings.BASE_DIR, image_path),
+        with open(os.path.join('../filling_data/filling_media/', image_path),
                   'rb') as img_file:
             # Save the image to the recipe instance
             recipe.image.save(os.path.basename(image_path), File(img_file))
