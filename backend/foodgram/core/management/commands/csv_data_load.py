@@ -1,6 +1,6 @@
 import csv
 import os
-
+from django.core.files import File
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -35,15 +35,25 @@ def tags_import(row):
 
 
 def recipes_import(row):
+    # Get the image path from the row
+    image_path = row[1]
     recipe = Recipe.objects.get_or_create(
         name=row[0],
-        image=row[1],
         text=row[2],
         author_id=row[3],
         cooking_time=row[4],
     )[0]
     tags = list(row[5].split(","))
     ingredients = list(row[6].split(","))
+    # Handle the image file
+    if image_path:
+        # Open the image file
+        with open(os.path.join(settings.BASE_DIR, image_path),
+                  'rb') as img_file:
+            # Save the image to the recipe instance
+            recipe.image.save(os.path.basename(image_path), File(img_file))
+
+    # Process tags and ingredients
     for tag in tags:
         recipe.tags.add(tag)
     for ingredient in ingredients:
