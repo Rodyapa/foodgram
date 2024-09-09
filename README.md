@@ -78,4 +78,5 @@ sudo docker-compose up -d --build
     *Nginx
     *Docker
     *Postgres
+    *Poetry
 https://github.com/Rodyapa
