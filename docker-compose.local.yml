@@ -37,7 +37,9 @@ services:
   gateway:
     depends_on:
       - backend
-    image: rodypa/foodgram_gateway
+    build:
+      context: gateway
+      dockerfile: ../gateway/Dockerfile
     volumes:
       - static:/staticfiles/
       - media:/app/foodgram/media/
