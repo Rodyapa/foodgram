@@ -2,149 +2,88 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
+from tests.base_test import BaseTestCase
 
 UserModel = get_user_model()
 
 
-class ProfileAvatarEditTestCase(TestCase):
+class ProfileAvatarEditTestCase(BaseTestCase):
     '''
     Test actions related to profile avatar.
     '''
     URL = '/api/users/me/avatar/'
+    VALID_AVATAR = ("data:image/png;base64,"
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAg"
+                    "MAAABieywaAAAACVBMVEUAAAD///9fX1/S0"
+                    "ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAC"
+                    "klEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==")
+    INVALID_AVATAR = 'wrong_avatar'
 
-    @classmethod
-    def setUpTestData(cls):  # Arrange data for entire test suite.
-        # Create Users
-        cls.unauth_client = APIClient()
-        cls.auth_client_1 = APIClient()
-
-        cls.user_authencticated_1 = UserModel.objects.create_user(
-            username='auth_user_1', password='password',
-            first_name='first_user', last_name='first_user',
-            email='user1mail@gmail.com')
-        cls.token = Token.objects.create(user=cls.user_authencticated_1)
-        cls.auth_client_1.credentials(
-            HTTP_AUTHORIZATION='Token ' + cls.token.key)
-
-    def test_authorized_user_can_add_avatar(self):
-        # Assert
-        payload = {
-            "avatar": ("data:image/png;base64,"
-                       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAg"
-                       "MAAABieywaAAAACVBMVEUAAAD///9fX1/S0"
-                       "ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAC"
-                       "klEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==")
-            }
-
+    def test_avatar_creation(self):
+        # Arrange
+        test_cases = [
+            (self.auth_client_1, 200, self.VALID_AVATAR,
+             'authorized user should be able to add avatar'),
+            (self.unauth_client, 401, self.VALID_AVATAR,
+             'unauthorized user should not be able to add avatar'),
+            (self.auth_client_1, 400, self.INVALID_AVATAR,
+             'user with wrong avatar data should receive 400 response')
+        ]
         # Act
-        response = self.auth_client_1.put(
-            self.URL,
-            payload,
-            format='json'
-        )
+        for client, expected_status, avatar_data, error_msg in test_cases:
+            with self.subTest(client=client, avatar_data=avatar_data,
+                              expected_status=expected_status,
+                              error_msg=error_msg):
+                payload = {"avatar": avatar_data}
+                response = client.put(self.URL, payload, format='json')
+                # Assert
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)
 
-        # Assert
-        self.assertEqual(response.status_code, 200,
-                         'User should be able to add profile avatar. \n'
-                         'Avatar should be encoded into Base64')
-        self.assertIn('avatar', response.data,
-                      'There must be uploaded avatar in response data.')
-
-    def test_user_cannot_create_avatar_with_wrong_data(self):
-        # Assert
-        payload = {
-            "avatar": ("wrong_data")
-            }
-
-        # Act
-        response = self.auth_client_1.put(
-            self.URL,
-            payload,
-            format='json'
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 400,
-                         'User cannot create avatar with wrong data.')
-
-    def test_unauthorized_user_cannot_add_avatar(self):
-        # Assert
-        payload = {
-            "avatar": ("data:image/png;base64,"
-                       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAg"
-                       "MAAABieywaAAAACVBMVEUAAAD///9fX1/S0"
-                       "ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAC"
-                       "klEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==")
-            }
-
-        # Act
-        response = self.unauth_client.put(
-            self.URL,
-            payload,
-            format='json'
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 401,
-                         'Anonymous should not be able to add profile avatar.')
-
-    def test_authorized_user_can_delete_his_avatar(self):
-        # Act
-        response = self.auth_client_1.delete(
-            self.URL
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 204,
-                         'Authorized User should be able to delete '
-                         'profile avatar.')
-
-    def test_anonymous_cannot_delete_avatar(self):
-        # Act
-        response = self.unauth_client.delete(
-            self.URL
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 401,
-                         'Anonymous should receive 401 status code')
+    def test_avatar_deleting(self):
+        test_cases = [
+            (self.auth_client_1, 204,
+             'authorized user should be able to delete his avatar'),
+            (self.unauth_client, 401,
+             'unauthorized user should not be able to delete his avatar')
+        ]
+        for client, expected_status, error_msg in test_cases:
+            with self.subTest(client=client,
+                              expected_status=expected_status,
+                              error_msg=error_msg):
+                response = client.delete(self.URL)
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)
 
 
-class EditPasswordTestCase(TestCase):
+class EditPasswordTestCase(BaseTestCase):
     URL = '/api/users/set_password/'
 
-    @classmethod
-    def setUpTestData(cls):  # Arrange data for entire test suite.
-        # Create Users
-        cls.unauth_client = APIClient()
-        cls.auth_client_1 = APIClient()
-        cls.user_authencticated_1 = UserModel.objects.create_user(
-            username='auth_user_1', password='password',
-            first_name='first_user', last_name='first_user',
-            email='user1mail@gmail.com')
-        cls.token = Token.objects.create(user=cls.user_authencticated_1)
-        cls.auth_client_1.credentials(
-            HTTP_AUTHORIZATION='Token ' + cls.token.key)
-
-    def test_user_can_change_his_own_password(self):
-        # Arrange
+    def test_password_changing_with_correct_credentials(self):
+        # Arrange 
+        test_cases = [
+            (self.auth_client_1, 204,
+             'Authorized User should be albe to change his password.'),
+            (self.unauth_client, 401,
+             'Anonymous can not change his password.'),
+        ]
         payload = {
             "new_password": "string123",
             "current_password": "password"
-            }
-
+        }
         # Act
-        response = self.auth_client_1.post(
-            self.URL,
-            payload,
-            format='json'
-        )
-        # Assert
-        self.assertEqual(response.status_code, 204,
-                         f'{response.data}'
-                         'User should be able to change his password')
+        for client, expected_status, error_msg in test_cases:
+            with self.subTest(client=client, expected_status=expected_status,
+                              error_msg=error_msg):
+                response = client.post(
+                    self.URL,
+                    payload,
+                    format='json'
+                )
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)
 
-    def test_user_cannot_change_password_with_wrong_data(self):
+    def test_password_changing_with_wrong_data(self):
         # Arrange
         wrong_datas = [{
                 "new_password": "string123",
@@ -168,40 +107,9 @@ class EditPasswordTestCase(TestCase):
                     f'{payload} \n'
                     'User should not be able password with wrong data')
 
-    def test_anonymous_cannot_change_his_own_password(self):
-        # Arrange
-        payload = {
-            "new_password": "string123",
-            "current_password": "password"
-            }
 
-        # Act
-        response = self.unauth_client.post(
-            self.URL,
-            payload,
-            format='json'
-        )
-        # Assert
-        self.assertEqual(response.status_code, 401,
-                         f'{response.data}'
-                         'Anonymous cannot change his password')
-
-
-class GetUserInfoTestCase(TestCase):
+class GetUserInfoTestCase(BaseTestCase):
     BASE_URL = '/api/users/'
-
-    @classmethod
-    def setUpTestData(cls):  # Arrange data for entire test suite.
-        # Create Users
-        cls.unauth_client = APIClient()
-        cls.auth_client_1 = APIClient()
-        cls.user_authencticated_1 = UserModel.objects.create_user(
-            username='auth_user_1', password='password',
-            first_name='first_user', last_name='first_user',
-            email='user1mail@gmail.com')
-        cls.token = Token.objects.create(user=cls.user_authencticated_1)
-        cls.auth_client_1.credentials(
-            HTTP_AUTHORIZATION='Token ' + cls.token.key)
 
     def test_anyone_can_get_list_of_users(self):
         # Act
