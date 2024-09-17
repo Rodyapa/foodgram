@@ -5,36 +5,28 @@ from django.urls import reverse
 from recipes.models import Recipe, Ingredient, Tag
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
+from tests.base_test import BaseTestCase
+from rest_framework.authtoken.models import Token
 
 UserModel = get_user_model()
 
 
-class AuthenticatedTestCase(TestCase):
+class RecipesBaseTestCase(BaseTestCase):
     '''Define assert method that every TestCase class will use'''
     @classmethod
     def setUpTestData(cls):
-        # Create Users
-        cls.auth_client_1 = APIClient()
+        super().setUpTestData()
+        # Create more users
         cls.auth_client_2 = APIClient()
-
-        cls.user_authencticated_1 = UserModel.objects.create_user(
-            username='auth_user_1', password='password',
-            first_name='first_user', last_name='first_user',
-            email='user1mail@gmail.com')
-
-        cls.user_authencticated_2 = UserModel.objects.create_user(
+        cls.user_authenticated_2 = UserModel.objects.create_user(
             username='auth_user_2', password='password',
             first_name='second_user', last_name='second_user',
             email='user2mail@gmail.com')
+        token = Token.objects.create(user=cls.user_authenticated_2)
+        cls.auth_client_2.credentials(
+            HTTP_AUTHORIZATION='Token ' + token.key)
 
-        # Get token
-        response = cls.auth_client_1.post('/api/auth/token/login', {
-            'email': 'user1mail@gmail.com', 'password': 'password'})
-        token = response.data['auth_token']
-
-        # Set token for all test cases
-        cls.auth_client_1.credentials(HTTP_AUTHORIZATION=f'Token {token}')
-
+    def setUp(cls):
         # Create Tags isntances
         Tag.objects.bulk_create(
             [
@@ -55,15 +47,15 @@ class AuthenticatedTestCase(TestCase):
             ]
         )
 
-        #Create Recipes instances
+        # create Recipes instances
         Recipe.objects.bulk_create(
             [
-                Recipe(author=cls.user_authencticated_1,
+                Recipe(author=cls.user_authenticated_1,
                        name='recipe1',
                        cooking_time=10,
                        short_link='qwerty1'
                        ),
-                Recipe(author=cls.user_authencticated_2,
+                Recipe(author=cls.user_authenticated_2,
                        name='recipe2',
                        cooking_time=10,
                        short_link='qwerty2'
@@ -72,10 +64,19 @@ class AuthenticatedTestCase(TestCase):
         )
 
 
-class RecipeAPITestCase(AuthenticatedTestCase):
+class RecipeAPITestCase(RecipesBaseTestCase):
     '''
     Tests related to Recipes.
     '''
+    BASE_URL = '/api/recipes'
+
+    def setUp(cls):
+        super().setUp()
+        first_users_recipe_id = Recipe.objects.get(
+            author=cls.user_authenticated_1
+        ).id
+        cls.existing_recipe_url = cls.BASE_URL + f'/{first_users_recipe_id}/'
+        cls.non_existing_recipe_url = cls.BASE_URL + '/9999/'
 
     # Anonymous can get list of recipes page.
     def test_access_home_page(self):
@@ -184,37 +185,93 @@ class RecipeAPITestCase(AuthenticatedTestCase):
             0,
             'Recipe should be created.')
 
-    # Anonymous can not access delete and edit pages of recipe.
-    def test_cannot_access_recipe_delete_page(self):
-        pass
+    def test_recipe_updating(self):
+        # Arrange
+        correct_data = {
+            "ingredients": [
+                {
+                    "id": 1,
+                    "amount": 10
+                }
+            ],
+            "tags": [
+                1,
+                2
+            ],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "name": "New_name",
+            "text": "new_string",
+            "cooking_time": 100
+            }
+        incorrect_data = {
+            "name": 'some nonsense'
+        }
+        test_cases = [
+            (self.auth_client_1, 200, self.existing_recipe_url, correct_data,
+             'User should be able to change his own recipe'),
+            (self.auth_client_1, 400, self.existing_recipe_url, incorrect_data, 
+             'User should not be able to change his own recipe with wrong data'
+             ),
+            (self.client, 401, self.existing_recipe_url, correct_data, 
+             'Anonymous should not be able to change recipe'),
+            (self.auth_client_2, 403, self.existing_recipe_url, correct_data,
+             'User should not be able to change recipe of an another user'),
+            (self.auth_client_1, 404, self.non_existing_recipe_url,
+             correct_data,
+             'User should not be able to change non existing recipe')
+        ]
         # Act
+        for client, expected_status, url, payload, error_msg in test_cases:
+            with self.subTest(client=client,
+                              expected_status=expected_status,
+                              url=url, error_msg=error_msg
+                              ):
+                response = client.patch(url, payload, format='json')
+                # Assert
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)
 
-    def test_cannot_access_recipe_edit_page(self):
-        pass
+    def test_recipe_deleting(self):
+        # Arrange
+        test_cases = [
+            (self.auth_client_2, 403, self.existing_recipe_url,
+             'User should not be able to delete recipe of an another user'),
+            (self.auth_client_1, 204, self.existing_recipe_url,
+             'User should be able to delete his own recipe'),
+            (self.client, 401, self.existing_recipe_url,
+             'Anonymous should not be able to delete recipe'),
+            (self.auth_client_1, 404, self.non_existing_recipe_url,
+             'User should not be able to delete non existing recipe')
+        ]
+        # Act
+        for client, expected_status, url, error_msg in test_cases:
+            with self.subTest(client=client,
+                              expected_status=expected_status,
+                              url=url, error_msg=error_msg
+                              ):
+                response = client.delete(url)
+                # Assert
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)
 
-    # Anonymous can get log in, log out and sign in pages.
-    def test_authentication_and_authorization_pages(self):
-        pass
-    # Anonymous can access static info pages.
-    def test_access_info_pages(self):
-        pass
-
-
-class AuthenticatedUserTestCase(TestCase):
-    '''
-    Tests checks that authenticated user can access 
-    edit and delete pages of his/her recipes.
-    '''
-    # Author of recipe can access delete or edit recipe pages.
-    def test_access_delete_page(self):
-        pass
-
-    def test_acess_edit_page(self):
-        pass
-    # Logged user can not access delete or edit pages someone else's recipes.
-
-    def test_cannot_access_anothers_edit_recipe_page(self):
-        pass
-
-    def test_cannot_access_anothers_delete_recipe_page(self):
-        pass
+    def test_get_short_link(self):
+        # Arrange
+        existing_url = self.existing_recipe_url + 'get-link/'
+        incorrect_url = self.non_existing_recipe_url + 'get-link/'
+        test_cases = [
+            (self.unauth_client, 200, existing_url,
+             'Anonymous user should be able to receive short link'),
+            (self.unauth_client, 404, incorrect_url,
+             'Anonymous user should not be able to receive short link '
+             'of non existing recipe')
+        ]
+        # Act
+        for client, expected_status, url, error_msg in test_cases:
+            with self.subTest(client=client,
+                              expected_status=expected_status,
+                              url=url, error_msg=error_msg
+                              ):
+                response = client.get(url)
+                # Assert
+                self.assertEqual(response.status_code, expected_status,
+                                 error_msg)

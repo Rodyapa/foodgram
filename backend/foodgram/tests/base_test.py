@@ -20,6 +20,6 @@ class BaseTestCase(TestCase):
             first_name='first_user', last_name='first_user',
             email='user1mail@gmail.com'
         )
-        cls.token = Token.objects.create(user=cls.user_authenticated_1)
+        token = Token.objects.create(user=cls.user_authenticated_1)
         cls.auth_client_1.credentials(
-            HTTP_AUTHORIZATION='Token ' + cls.token.key)
+            HTTP_AUTHORIZATION='Token ' + token.key)
