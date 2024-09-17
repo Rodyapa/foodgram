@@ -11,6 +11,8 @@ class Base64ImageField(ImageField):
         if isinstance(data, str):
             if 'data:' in data and ';base64,' in data:
                 header, data = data.split(';base64,')
+            else:
+                self.fail('invalid_image')
             try:
                 decoded_file = base64.b64decode(data)
             except TypeError:
