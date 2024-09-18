@@ -4,6 +4,9 @@ from recipes.models import IngredientPerRecipe
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
+import os
+
+from django.conf import settings
 
 
 def create_ingredients_list(request):
@@ -24,7 +27,8 @@ def create_ingredients_list(request):
 
 def make_pdf_file_of_ingredients(final_list):
     # Check for the correct font path in production
-    font_path = '../static/fonts/Lato-Regular.ttf'
+    font_path = font_path = os.path.join(
+        settings.BASE_DIR, 'static', 'fonts', 'Lato-Regular.ttf')
 
     pdfmetrics.registerFont(TTFont('Lato-Regular', font_path))
 
