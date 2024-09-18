@@ -159,7 +159,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @shopping_cart.mapping.delete
     def remove_recipe_from_shopping_cart(self, request, pk):
         self.link_model = ShopingCart
-        return self._delete_relation(Q(recipe__id=pk))
+        return self._delete_relation(Q(recipe_id=pk))
 
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
