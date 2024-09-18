@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from tests.base_test import BaseTestCase
@@ -64,19 +63,19 @@ class RegisterTestCase(BaseTestCase):
     def test_new_user_creation(self):
         # Arrange
         correct_credentials = {
-                "email": "vpupkin@yandex.ru",
-                "username": "vasya.pupkin",
-                "first_name": "Вася",
-                "last_name": "Иванов",
-                "password": "1234qrty"
-            }
+            "email": "vpupkin@yandex.ru",
+            "username": "vasya.pupkin",
+            "first_name": "Вася",
+            "last_name": "Иванов",
+            "password": "1234qrty"
+        }
         incorrect_credentials = {
-                "email": "vpupkin@yandex.ru",
-                "username": "vasya.pupkin",
-                "first_name": "Вася",
-                "last_name": "Иванов",
-                "password": "short"
-            }
+            "email": "vpupkin@yandex.ru",
+            "username": "vasya.pupkin",
+            "first_name": "Вася",
+            "last_name": "Иванов",
+            "password": "short"
+        }
         url = '/api/users/'
         test_cases = [
             (correct_credentials, 201,

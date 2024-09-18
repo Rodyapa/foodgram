@@ -1,12 +1,9 @@
-import requests
-import unittest
-from django.test import TestCase, Client
-from django.urls import reverse
-from recipes.models import Recipe, Ingredient, Tag
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+from recipes.models import Ingredient, Recipe, Tag
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 from tests.base_test import BaseTestCase
-from rest_framework.authtoken.models import Token
 
 UserModel = get_user_model()
 
@@ -130,11 +127,15 @@ class RecipeAPITestCase(RecipesBaseTestCase):
                 1,
                 2
             ],
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "image": "data:image/png;base64,"
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABA"
+            "gMAAABieywaAAAACVBMVEUAAAD///9fX1/"
+            "S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAA"
+            "ACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
             "name": "should_not_be_created",
             "text": "string",
             "cooking_time": 1
-            }
+        }
         response = self.client.post(
             url,
             payload,
@@ -164,11 +165,14 @@ class RecipeAPITestCase(RecipesBaseTestCase):
                 1,
                 2
             ],
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "image": "data:image/png;base64,iVBORw"
+            "0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaA"
+            "AAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7"
+            "EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
             "name": "should_be_created",
             "text": "string",
             "cooking_time": 1
-            }
+        }
         response = self.auth_client_1.post(
             url,
             payload,
@@ -198,21 +202,24 @@ class RecipeAPITestCase(RecipesBaseTestCase):
                 1,
                 2
             ],
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "image": "data:image/png;base64,iVBORw0"
+            "KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAA"
+            "AACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA"
+            "7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
             "name": "New_name",
             "text": "new_string",
             "cooking_time": 100
-            }
+        }
         incorrect_data = {
             "name": 'some nonsense'
         }
         test_cases = [
             (self.auth_client_1, 200, self.existing_recipe_url, correct_data,
              'User should be able to change his own recipe'),
-            (self.auth_client_1, 400, self.existing_recipe_url, incorrect_data, 
+            (self.auth_client_1, 400, self.existing_recipe_url, incorrect_data,
              'User should not be able to change his own recipe with wrong data'
              ),
-            (self.client, 401, self.existing_recipe_url, correct_data, 
+            (self.client, 401, self.existing_recipe_url, correct_data,
              'Anonymous should not be able to change recipe'),
             (self.auth_client_2, 403, self.existing_recipe_url, correct_data,
              'User should not be able to change recipe of an another user'),
