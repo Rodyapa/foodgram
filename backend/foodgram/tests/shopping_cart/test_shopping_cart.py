@@ -1,8 +1,8 @@
 
-from recipes.models import Recipe, ShopingCart
 from django.contrib.auth import get_user_model
-from tests.base_test import BaseTestCase
 from django.db import transaction
+from recipes.models import Recipe, ShopingCart
+from tests.base_test import BaseTestCase
 
 UserModel = get_user_model()
 
@@ -47,7 +47,7 @@ class RecipeAdditionToShoppingCart(BaseTestCase):
             (self.auth_client_1, 400, self.existing_recipe_url,
              'User should not be able to add recipe to the shopping cart twice'
              ),
-            (self.client, 401, self.existing_recipe_url, 
+            (self.client, 401, self.existing_recipe_url,
              'Anonymous should not be able to add recipe to the shopping cart'
              ),
             (self.auth_client_1, 404, self.non_existing_recipe_url,

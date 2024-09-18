@@ -3,7 +3,7 @@ from recipes.models import FavoriteRecipe, Recipe
 from tests.base_test import BaseTestCase
 
 
-class FavouriteRecipeTestCase(BaseTestCase):    
+class FavouriteRecipeTestCase(BaseTestCase):
     def setUp(self):
         self.recipe = Recipe.objects.create(author=self.user_authenticated_1,
                                             name='recipe1',
@@ -55,7 +55,7 @@ class FavouriteRecipeTestCase(BaseTestCase):
 
         # Act
         for client, expected_status, url, error_msg in test_cases:
-            with self.subTest(client=client, url=url, error_msg=error_msg, 
+            with self.subTest(client=client, url=url, error_msg=error_msg,
                               expected_status=expected_status):
                 with transaction.atomic():
                     response = client.delete(url)

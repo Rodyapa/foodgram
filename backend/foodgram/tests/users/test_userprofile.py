@@ -1,6 +1,3 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from tests.base_test import BaseTestCase
 
@@ -60,7 +57,7 @@ class EditPasswordTestCase(BaseTestCase):
     URL = '/api/users/set_password/'
 
     def test_password_changing_with_correct_credentials(self):
-        # Arrange 
+        # Arrange
         test_cases = [
             (self.auth_client_1, 204,
              'Authorized User should be albe to change his password.'),
@@ -86,13 +83,13 @@ class EditPasswordTestCase(BaseTestCase):
     def test_password_changing_with_wrong_data(self):
         # Arrange
         wrong_datas = [{
-                "new_password": "string123",
-                "current_password": "wrong_current_password"
-            },
+            "new_password": "string123",
+            "current_password": "wrong_current_password"
+        },
             {
-                "new_password": "short",
-                "current_password": "password"
-            }]
+            "new_password": "short",
+            "current_password": "password"
+        }]
         # Act
         for payload in wrong_datas:
             with self.subTest(payload=payload):
