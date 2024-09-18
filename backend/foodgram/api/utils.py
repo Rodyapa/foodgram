@@ -4,6 +4,9 @@ from recipes.models import IngredientPerRecipe
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
+from django.templatetags.static import static
+from django.conf import settings
+import os
 
 
 def create_ingredients_list(request):
@@ -23,20 +26,23 @@ def create_ingredients_list(request):
 
 
 def make_pdf_file_of_ingredients(final_list):
-    pdfmetrics.registerFont(
-        TTFont('Lato-Regular', 'Lato-Regular.ttf', 'UTF-8'))
+    # Get the full path to the font file
+    font_path = os.path.join(settings.BASE_DIR, 'static/fonts/Lato-Regular.ttf')
+    pdfmetrics.registerFont(TTFont('Lato-Regular', font_path))
+
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = ('attachment; '
-                                       'filename="shopping_list.pdf"')
+    response['Content-Disposition'] = 'attachment; filename="shopping_list.pdf"'
     page = canvas.Canvas(response)
     page.setFont('Lato-Regular', size=18)
     page.drawString(200, 800, 'Список ингредиентов')
+
     page.setFont('Lato-Regular', size=16)
     height = 750
     for i, (name, data) in enumerate(final_list.items(), 1):
-        page.drawString(75, height, (f'{i}.  {name} - {data["total_amount"]}, '
-                                     f'{data["measurement_unit"]}'))
+        page.drawString(75, height, f'{i}.  {name} - {data["total_amount"]}, {data["measurement_unit"]}')
         height -= 25
+
     page.showPage()
     page.save()
+
     return response

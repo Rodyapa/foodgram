@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser import views as djoser_views
 from recipes.models import FavoriteRecipe, Ingredient, Recipe, ShopingCart, Tag
+from users.models import Subscription
 from rest_framework import filters as drf_filters
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -24,7 +25,8 @@ from .utils import create_ingredients_list, make_pdf_file_of_ingredients
 User = get_user_model()
 
 
-class CustomUserViewSet(djoser_views.UserViewSet):
+class CustomUserViewSet(djoser_views.UserViewSet,
+                        AddDeleteManyToManyRelationMixin):
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
@@ -36,9 +38,12 @@ class CustomUserViewSet(djoser_views.UserViewSet):
             self.permission_classes = [permissions.IsAuthenticated, ]
         return super().get_permissions()
 
-    @action(detail=True, methods=['post', ],
+    @action(detail=True, methods=['post', 'delete'],
             permission_classes=[permissions.IsAuthenticated, ],)
     def subscribe(self, request, id=None):
+        if request.method == 'DELETE':
+            self.link_model = Subscription
+            return self._delete_relation(Q(target_user__id=self.kwargs['id']))
         request.data['user'] = request.user.id
         if not User.objects.filter(id=self.kwargs['id']).exists():
             return Response(data={
@@ -159,7 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @shopping_cart.mapping.delete
     def remove_recipe_from_shopping_cart(self, request, pk):
         self.link_model = ShopingCart
-        return self._delete_relation(Q(recipe__id=pk))
+        return self._delete_relation(Q(recipe_id=pk))
 
     @action(detail=False, methods=['get'],
             permission_classes=[permissions.IsAuthenticated])
