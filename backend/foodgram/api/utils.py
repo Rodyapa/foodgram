@@ -26,9 +26,14 @@ def create_ingredients_list(request):
 
 
 def make_pdf_file_of_ingredients(final_list):
-    # Get the full path to the font file
-    font_path = os.path.join(settings.BASE_DIR,
-                             'static/fonts/Lato-Regular.ttf')
+    # Check for the correct font path in production
+    font_path = os.path.join(settings.STATIC_ROOT, 'fonts/Lato-Regular.ttf')
+
+    # In development, use STATICFILES_DIRS
+    if not os.path.exists(font_path):
+        font_path = os.path.join(settings.BASE_DIR,
+                                 'static/fonts/Lato-Regular.ttf')
+
     pdfmetrics.registerFont(TTFont('Lato-Regular', font_path))
 
     response = HttpResponse(content_type='application/pdf')
@@ -43,7 +48,7 @@ def make_pdf_file_of_ingredients(final_list):
     for i, (name, data) in enumerate(final_list.items(), 1):
         page.drawString(75, height,
                         f'{i}.  {name} - {data["total_amount"]}, '
-                        '{data["measurement_unit"]}')
+                        f'{data["measurement_unit"]}')
         height -= 25
 
     page.showPage()
