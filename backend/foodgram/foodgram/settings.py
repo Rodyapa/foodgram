@@ -117,7 +117,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = BASE_DIR / 'collected_static'
+STATIC_ROOT = 'collected_static'
 
 STATICFILES_DIRS = [
     '../docs'
