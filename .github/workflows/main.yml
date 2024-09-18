@@ -39,6 +39,11 @@ jobs:
         cd ./backend/foodgram/
         poetry install
 
+    - name: Collect static files
+      run: |
+        cd backend/foodgram
+        poetry run python manage.py collectstatic --noinput
+      
     - name: Test with flake8 and django tests
       env:
         POSTGRES_USER: django_user
@@ -47,8 +52,6 @@ jobs:
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       run: |
-        ls
-        pwd
         cd backend/foodgram
         poetry  run flake8 /home/runner/work/foodgram/foodgram/backend
         poetry  run python /home/runner/work/foodgram/foodgram/backend/foodgram/manage.py test tests/
