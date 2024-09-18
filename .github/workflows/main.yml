@@ -53,6 +53,11 @@ jobs:
         DB_PORT: 5432
       run: |
         cd backend/foodgram
+        ls /home/runner/work/foodgram/
+        ls /home/runner/work/foodgram/foodgram/
+        ls /home/runner/work/foodgram/foodgram/backend/
+        ls /home/runner/work/foodgram/foodgram/backend/foodgram/
+        ls /home/runner/work/foodgram/foodgram/backend/foodgram/static/
         poetry  run flake8 /home/runner/work/foodgram/foodgram/backend
         poetry  run python /home/runner/work/foodgram/foodgram/backend/foodgram/manage.py test 
 
