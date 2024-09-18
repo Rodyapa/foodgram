@@ -31,7 +31,8 @@ def make_pdf_file_of_ingredients(final_list):
 
     # In development, use STATICFILES_DIRS
     if not os.path.exists(font_path):
-        font_path = os.path.join(settings.BASE_DIR, 'static/fonts/Lato-Regular.ttf')
+        font_path = os.path.join(settings.BASE_DIR,
+                                 'static/fonts/Lato-Regular.ttf')
 
     pdfmetrics.registerFont(TTFont('Lato-Regular', font_path))
 
