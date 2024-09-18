@@ -6,8 +6,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 import os
 
-from django.conf import settings
-
 
 def create_ingredients_list(request):
     final_list = {}
